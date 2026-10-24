@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Container Runtime · Container Runtime</title>
+<meta name="description" content="A workshop that rebuilds Docker from scratch: a container specification becomes an ordered plan of namespace, mount and cgroup steps, and the runner really writes the cgroup limits and really starts the command when the machine gives it the rights.">
+<meta name="theme-color" content="hsl(207 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">CR</span>
+    <span><strong>Container Runtime</strong><small>Namespaces and cgroups, step by step</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">infrastructure &amp; tooling</span>
+      <h1>How a container is made, one step at a time.</h1>
+      <p class="lede">A workshop that rebuilds Docker from scratch: a container specification becomes an ordered plan of namespace, mount and cgroup steps, and the runner really writes the cgroup limits and really starts the command when the machine gives it the rights.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+        
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">☰</div>
+          <h3>The plan before the run</h3>
+          <p>Every step of the container is written down with its arguments, so the plan can be read and checked.</p>
+        </article><article class="card reveal">
+          <div class="icon">◉</div>
+          <h3>The namespaces of the kernel</h3>
+          <p>The mask of the container is built from the clone flags the kernel takes, one namespace at a time.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>A root filesystem of its own</h3>
+          <p>The rootfs is generated with the layout of a small image, with a hostname, a resolver and an entry point.</p>
+        </article><article class="card reveal">
+          <div class="icon">◫</div>
+          <h3>The limits are real</h3>
+          <p>The memory and the cpu limits are written into cgroup v2 when the machine allows it.</p>
+        </article><article class="card reveal">
+          <div class="icon">▷</div>
+          <h3>The command really starts</h3>
+          <p>The command runs inside the namespaces with unshare, and its output lands in the log.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛁</div>
+          <h3>It says why it did not run</h3>
+          <p>Without the rights the run is a dry run, and the reason is written down instead of being hidden.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The planner turns a container specification into a list of steps, every step a dataclass with the arguments it needs, so the plan can be read before anything runs. The namespace mask is built from the flags of the kernel, the root filesystem is generated with the layout of a small image, and the cgroup limits are written into cgroup v2 when the directory can be written. The command is then started inside the namespaces with unshare; without the rights the run stays a dry run and says why.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Python</span><span class="badge">Linux namespaces</span><span class="badge">cgroups v2</span><span class="badge">unshare</span><span class="badge">Dataclass plans</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The state of the last plan: the steps, the namespaces and the limits of the container</td></tr><tr><td><code>GET</code></td><td><code>/api/plan</code></td><td>The steps of the plan, with the arguments of every step</td></tr><tr><td><code>POST</code></td><td><code>/api/plan</code></td><td>Plan a container with the limits of the request and answer with the new plan</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># pip install -r requirements.txt
+# python main.py run          # plan the container and try to run it
+# python main.py demo         # the plan, printed step by step
+# pytest -q                  # the test suite</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div>
+            <div class="stat"><div class="value" data-stat="steps">—</div><div class="label">Steps of the plan</div></div><div class="stat"><div class="value" data-stat="namespaces">—</div><div class="label">Namespaces</div></div><div class="stat"><div class="value" data-stat="memory_mb">—</div><div class="label">Memory limit (MB)</div></div><div class="stat"><div class="value" data-stat="mode">—</div><div class="label">Run mode</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Container Runtime — part of the Foundev portfolio.</span>
+    <span>Themed for infrastructure &amp; tooling.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

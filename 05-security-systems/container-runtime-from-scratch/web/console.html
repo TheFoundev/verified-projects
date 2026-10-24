@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Container Runtime</title>
+<meta name="description" content="A workshop that rebuilds Docker from scratch: a container specification becomes an ordered plan of namespace, mount and cgroup steps, and the runner really writes the cgroup limits and really starts the command when the machine gives it the rights.">
+<meta name="theme-color" content="hsl(207 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">CR</span>
+    <span><strong>Container Runtime</strong><small>Namespaces and cgroups, step by step</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Container Runtime</h1>
+        <p class="lede" style="margin-top:8px">The plan of a container, step by step, with the namespaces it gets and the limits the kernel is given.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+      </div>
+    </div>
+    <div class="stats reveal">
+      <div class="stat"><div class="value" data-stat="steps">—</div><div class="label">Steps of the plan</div></div>
+      <div class="stat"><div class="value" data-stat="namespaces">—</div><div class="label">Namespaces</div></div>
+      <div class="stat"><div class="value" data-stat="memory_mb">—</div><div class="label">Memory limit (MB)</div></div>
+      <div class="stat"><div class="value" data-stat="mode">—</div><div class="label">Run mode</div></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+        <div class="panel-head"><h3>The plan of the container</h3><span class="badge" data-panel-status>idle</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">The steps of the plan, in the order the runner walks them, with the arguments of each step.</p>
+          <div class="panel" style="margin-top:14px;box-shadow:none">
+            <table>
+              <thead><tr><th>Step</th><th>What it does</th></tr></thead>
+              <tbody data-list="plan"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      
+      <section class="panel reveal">
+        <div class="panel-head"><h3>The namespaces</h3><span class="badge" data-panel-status>idle</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">The clone flags the container gets and the bit each of them adds to the mask of the kernel.</p>
+          <div class="panel" style="margin-top:14px;box-shadow:none">
+            <table>
+              <thead><tr><th>Namespace</th><th>Flag</th></tr></thead>
+              <tbody data-list="namespaces"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      
+      <section class="panel reveal">
+        <div class="panel-head"><h3>Plan a container</h3><span class="badge" data-panel-status>idle</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">The specification of the container becomes the plan the runner walks. The run stays a dry run when the machine does not give the rights.</p>
+          <form id="planForm" style="margin-top:14px">
+            <div class="field"><label for="cname">Name</label><input id="cname" name="name" value="orders"></div>
+            <div class="field"><label for="cmem">Memory limit (MB)</label><input id="cmem" name="memory_mb" type="number" value="256" min="16" max="4096"></div>
+            <div class="field"><label for="ccpu">CPU share (%)</label><input id="ccpu" name="cpu_percent" type="number" value="25" min="1" max="100"></div>
+            <button class="btn primary" type="submit">Plan the container</button>
+          </form>
+          <div class="hint" style="margin-top:12px" id="planResult">The answer of the API will show up here.</div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Container Runtime · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function updateUI(data) {
+  // Update stats
+  if (data.stats) {
+    document.querySelectorAll('[data-stat]').forEach(function(el) {
+      var key = el.getAttribute('data-stat');
+      if (data.stats[key] !== undefined && data.stats[key] !== null) {
+        el.textContent = data.stats[key];
+      }
+    });
+  }
+  // Update lists
+  if (data.lists) {
+    document.querySelectorAll('[data-list]').forEach(function(el) {
+      var listName = el.getAttribute('data-list');
+      var rows = data.lists[listName] || [];
+      if (!rows.length) {
+        el.innerHTML = '<tr><td colspan="2" class="muted">Nothing yet.</td></tr>';
+        return;
+      }
+      var html = '';
+      rows.forEach(function(row) {
+        var cells = Object.values(row).map(function(cell) {
+          return '<td>' + escapeHtml(cell) + '</td>';
+        }).join('');
+        html += '<tr>' + cells + '</tr>';
+      });
+      el.innerHTML = html;
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Refresh button
+  document.querySelectorAll('[data-refresh]').forEach(function(btn) {
+    btn.addEventListener('click', function() { location.reload(); });
+  });
+  
+  // Plan form
+  var form = document.getElementById('planForm');
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var resultDiv = document.getElementById('planResult');
+      var btn = form.querySelector('button[type="submit"]');
+      var formData = new FormData(form);
+      var payload = {
+        name: formData.get('name') || 'orders',
+        memory_mb: parseInt(formData.get('memory_mb') || '256'),
+        cpu_percent: parseInt(formData.get('cpu_percent') || '25')
+      };
+      
+      btn.disabled = true;
+      resultDiv.textContent = 'Planning...';
+      
+      try {
+        var resp = await fetch('/api/plan', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Request failed');
+        
+        resultDiv.textContent = 'Name: ' + data.name + ' · Steps: ' + data.steps + ' · Namespaces: ' + data.namespaces + ' · Memory: ' + data.memory_mb + 'MB · ' + (data.executed ? 'Executed' : 'Dry run');
+        
+        // Update immediately from response
+        if (data.lists || data.stats) {
+          updateUI(data);
+        }
+        
+        // Also fetch fresh summary
+        try {
+          var summaryResp = await fetch('/api/summary?_=' + Date.now(), {credentials: 'same-origin'});
+          var summaryData = await summaryResp.json();
+          updateUI(summaryData);
+        } catch(ex) {}
+        
+      } catch(err) {
+        resultDiv.textContent = 'Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+  
+  // Initial load
+  setTimeout(function() {
+    fetch('/api/summary?_=' + Date.now(), {credentials: 'same-origin'})
+      .then(function(r){ return r.json(); })
+      .then(updateUI)
+      .catch(function(){});
+  }, 500);
+});
+</script>
+</body>
+</html>
