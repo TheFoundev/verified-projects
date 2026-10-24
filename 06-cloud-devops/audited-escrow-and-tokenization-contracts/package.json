@@ -1,0 +1,18 @@
+{
+  "name": "audited-escrow-and-tokenization-contracts",
+  "version": "1.0.0",
+  "description": "Multi-party escrow with dispute resolution and a tokenized asset contract composed from OpenZeppelin audited primitives.",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "hardhat": "^2.22.0",
+    "typescript": "^5.4.0"
+  }
+}

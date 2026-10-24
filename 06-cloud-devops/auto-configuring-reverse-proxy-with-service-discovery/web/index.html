@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relay · Relay</title>
+<meta name="description" content="Relay reads a small services file, or the containers of the Docker daemon, and turns it into a routing table. A request to /service/path is sent to a healthy instance of that service, chosen in round-robin order. The proxy answers /health and an instance can be marked as unhealthy.">
+<meta name="theme-color" content="hsl(262 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Rl</span>
+    <span><strong>Relay</strong><small>A reverse proxy that picks a healthy backend for every path prefix</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">artificial intelligence</span>
+      <h1>One address in front of many backends.</h1>
+      <p class="lede">Relay reads a small services file, or the containers of the Docker daemon, and turns it into a routing table. A request to /service/path is sent to a healthy instance of that service, chosen in round-robin order. The proxy answers /health and an instance can be marked as unhealthy.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Services file</h3>
+          <p>ParseConfig reads the small services format of the project: a name and a list of instance URLs.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Round robin</h3>
+          <p>Registry.Pick starts at an atomic counter and returns the next healthy instance of the service.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Reverse proxy</h3>
+          <p>The path prefix is cut off and the request is sent to the backend with httputil.ReverseProxy.</p>
+        </article><article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Health marks</h3>
+          <p>Registry.Mark sets the health of one instance, so a broken backend is skipped.</p>
+        </article><article class="card reveal">
+          <div class="icon">◷</div>
+          <h3>Docker discovery</h3>
+          <p>DiscoverFromDocker turns the containers with the label foundev.service into services.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Health endpoint</h3>
+          <p>The proxy answers /health with ok, whatever the routing table holds.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The program is one package main in proxy.go. ParseConfig reads the services file and fills a Registry, which holds a map of Service and the order the services were declared in. Registry.Pick walks the instances of a service, starting at an atomic counter, and returns the first healthy one, so the instances take turns. Registry.ServeHTTP splits the path into a service and the rest, and hands the request to the httputil.ReverseProxy of the chosen instance; that proxy is kept in a sync.Map so it is built once. DockerClient talks to the daemon over its unix socket and DiscoverFromDocker turns the containers that carry the label foundev.service into the same registry.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">net/http</span><span class="badge">httputil.ReverseProxy</span><span class="badge">Docker Engine API</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The services, the instances and the health of the registry</td></tr><tr><td><code>GET</code></td><td><code>/api/services</code></td><td>The services of the registry with their instance counts</td></tr><tr><td><code>GET</code></td><td><code>/api/instances</code></td><td>Every instance of every service with its health</td></tr><tr><td><code>POST</code></td><td><code>/api/health</code></td><td>Mark one instance healthy or unhealthy</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -config config.yaml -port 8080
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="services">—</div><div class="label">Services</div></div><div class="stat"><div class="value" data-stat="instances">—</div><div class="label">Instances</div></div><div class="stat"><div class="value" data-stat="healthy">—</div><div class="label">Healthy</div></div><div class="stat"><div class="value" data-stat="unhealthy">—</div><div class="label">Unhealthy</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Relay — part of the Foundev portfolio.</span>
+    <span>Themed for artificial intelligence.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

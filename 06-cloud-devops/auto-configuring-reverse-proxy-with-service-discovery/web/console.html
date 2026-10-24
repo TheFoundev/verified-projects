@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Relay</title>
+<meta name="description" content="Relay reads a small services file, or the containers of the Docker daemon, and turns it into a routing table. A request to /service/path is sent to a healthy instance of that service, chosen in round-robin order. The proxy answers /health and an instance can be marked as unhealthy.">
+<meta name="theme-color" content="hsl(262 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Rl</span>
+    <span><strong>Relay</strong><small>A reverse proxy that picks a healthy backend for every path prefix</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Relay</h1>
+        <p class="lede" style="margin-top:8px">The services of the registry, their instances, their health and the order in which the round robin picks them.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+      </div>
+    </div>
+    <div class="stats reveal"><div class="stat"><div class="value" data-stat="services">—</div><div class="label">Services</div></div><div class="stat"><div class="value" data-stat="instances">—</div><div class="label">Instances</div></div><div class="stat"><div class="value" data-stat="healthy">—</div><div class="label">Healthy</div></div><div class="stat"><div class="value" data-stat="unhealthy">—</div><div class="label">Unhealthy</div></div></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+  <div class="panel-head"><h3>The services</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The services of the registry, as ParseConfig read them.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Service</th><th>Instances</th><th>Healthy</th></tr></thead>
+    <tbody data-list="services"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The instances</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">Every backend of every service and the health flag of the instance.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Service</th><th>Instance</th><th>Healthy</th></tr></thead>
+    <tbody data-list="instances"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The round robin</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The instances in the order Registry.Pick returns them, four picks per service.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>#</th><th>Service</th><th>Instance</th></tr></thead>
+    <tbody data-list="picks"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Mark an instance</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">Registry.Mark sets the health of one instance; an unhealthy instance is skipped by Pick.</p>
+<form data-action style="margin-top:14px">
+<div class="field"><label for="service">Service</label><input id="service" name="service" value="api"></div><div class="field"><label for="instance">Instance URL</label><input id="instance" name="instance" value="http://127.0.0.1:9001"></div><div class="field"><label for="healthy">Healthy</label><select id="healthy" name="healthy"><option value="true">healthy</option><option value="false">unhealthy</option></select></div>
+  <button class="btn primary" type="submit">Save the health</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]") || form.parentElement.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/health", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Relay · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("[data-refresh]").forEach(function (button) {
+    button.addEventListener("click", function () { location.reload(); });
+  });
+});
+</script>
+</body>
+</html>

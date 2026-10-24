@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escrow & Tokenization · project console</title>
+<meta name="description" content="A multi-party escrow with dispute resolution, composed from audited OpenZeppelin primitives, plus an ERC721 asset token that records per-token provenance and an escrow factory with an on-chain index.">
+<meta name="theme-color" content="hsl(44 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">ES</span>
+    <span><strong>Escrow & Tokenization</strong><small>Audited primitives, explicit state machine</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">contracts · Solidity</span>
+      <h1>Value leaves only through withdraw().</h1>
+      <p class="lede">A multi-party escrow with dispute resolution, composed from audited OpenZeppelin primitives, plus an ERC721 asset token that records per-token provenance and an escrow factory with an on-chain index.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is a Solidity contract suite, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Three-party escrow</h3>
+          <p>Buyer, seller and an arbiter settle in native ETH or a single ERC20, with partial funding before the deadline.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⛓</div>
+          <h3>An explicit state machine</h3>
+          <p>Created, Funded, Released, Disputed, Refunded and ArbiterDecided, each with custom errors and full event coverage.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">○</div>
+          <h3>Pull payments only</h3>
+          <p>There are no direct sends anywhere; checks-effects-interactions and ReentrancyGuard protect withdraw().</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Tokenized provenance</h3>
+          <p>The ERC721 records the original creator, escrow link and audit verdict for every token.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⏱</div>
+          <h3>Timeouts that settle</h3>
+          <p>A silent seller, buyer or arbiter cannot strand the funds; the deadline paths release or refund.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>A queryable factory</h3>
+          <p>Deployed escrows are indexed by creation order, buyer and seller, with pagination on chain.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The contracts compose access control, pausability, safe ERC20 transfers and the ERC721 implementation from OpenZeppelin rather than re-implementing them. EscrowFactory deploys escrow instances and maintains the index; the test-only attacker contract proves that withdraw cannot be re-entered. A Hardhat and TypeScript suite exercises funding, disputes, both timeout paths and the provenance record.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Solidity</span><span class="badge">OpenZeppelin</span><span class="badge">Hardhat</span><span class="badge">TypeScript</span><span class="badge">ethers.js</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>npm test</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>npm install</code></td><td>install the Hardhat toolchain</td></tr><tr><td><code>npm test</code></td><td>compile and run the contract suite</td></tr><tr><td><code>npx hardhat node</code></td><td>start a local chain</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Escrow & Tokenization — part of the Foundev portfolio.</span>
+    <span>A Solidity contract suite.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
