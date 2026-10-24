@@ -1,0 +1,14 @@
+{
+  "name": "decentralized-storage-dapp-on-ipfs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Create a decentralized file-sharing application where uploads are content-addressed on IPFS, access is recorded on-chain and files are retrieved through gateways.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content addressed store</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    fieldset { border: 1px solid #ccc; margin-bottom: 1rem; }
+    #cid { width: 100%; font-family: monospace; }
+    #output { border: 1px solid #ccc; padding: 0.5rem; min-height: 60px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Content addressed store</h1>
+  <p>Every value gets a CIDv1 derived from its SHA-256 hash.</p>
+  <fieldset>
+    <legend>Add</legend>
+    <textarea id="content" rows="4" cols="60" placeholder="type some content" aria-label="Content to store"></textarea>
+    <button id="add">Add</button>
+    <p>CID: <span id="cid"></span></p>
+  </fieldset>
+  <fieldset>
+    <legend>Fetch</legend>
+    <input id="target" placeholder="bafk..." aria-label="CID to fetch">
+    <button id="fetch">Fetch</button>
+    <div id="output"></div>
+  </fieldset>
+  <script src="/app.js"></script>
+</body>
+</html>
