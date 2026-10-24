@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bulwark · Bulwark</title>
+<meta name="description" content="Bulwark matches the path, the query and the body of a request against four regular expressions: SQL injection, cross-site scripting, path traversal and scanner signatures. Every match becomes a finding with a severity and the text that matched it, the findings are scored and a score of two or more blocks the request. The escapes are decoded once before the request is read, so an address written as %3Cscript%3E is caught as well.">
+<meta name="theme-color" content="hsl(350 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Bw</span>
+    <span><strong>Bulwark</strong><small>A small web application firewall that reads requests as text</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">security &amp; defence</span>
+      <h1>Look at the request before the handler sees it.</h1>
+      <p class="lede">Bulwark matches the path, the query and the body of a request against four regular expressions: SQL injection, cross-site scripting, path traversal and scanner signatures. Every match becomes a finding with a severity and the text that matched it, the findings are scored and a score of two or more blocks the request. The escapes are decoded once before the request is read, so an address written as %3Cscript%3E is caught as well.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Four rules</h3>
+          <p>CRS-001 sqli, CRS-002 xss, CRS-003 traversal and CRS-004 scanner, each with a severity.</p>
+        </article><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Three fields</h3>
+          <p>Inspect looks at the path, the query and the body of the request.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Severity score</h3>
+          <p>Score adds the severity of the findings up, and Blocked refuses a score of two or more.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Decoded once</h3>
+          <p>The escapes are decoded before the request is read, so an encoded attack is caught.</p>
+        </article><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Evidence</h3>
+          <p>Every finding keeps the text that matched it.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Middleware</h3>
+          <p>Middleware puts the firewall in front of a handler and answers 403.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">waf.go holds the engine. The rules slice holds four Rule values with an id, a category, a severity and a compiled regexp. Inspect runs every rule against the path, the query and the body and stops at the first field that matches, so a request gives at most one finding per rule. Score adds the severities up and Blocked reports a score of two or more. Inspectable turns an http.Request into the Request the firewall reads and decodes the escapes once with url.PathUnescape, and Middleware puts the same decision in front of a handler. main.go is the command line that inspects one request and prints the decision, the score and the findings as JSON.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">regexp</span><span class="badge">net/http</span><span class="badge">encoding/json</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The rule set, the findings of the last request and the decision</td></tr><tr><td><code>GET</code></td><td><code>/api/rules</code></td><td>The rules of the firewall with their severity and pattern</td></tr><tr><td><code>GET</code></td><td><code>/api/findings</code></td><td>The findings of the last inspected request</td></tr><tr><td><code>POST</code></td><td><code>/api/inspect</code></td><td>Inspect a request and return the findings and the decision</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -path /items -query 'id=1 union select 1'
+# go run . -method POST -body '<script>alert(1)</script>'
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="rules">—</div><div class="label">Rules</div></div><div class="stat"><div class="value" data-stat="categories">—</div><div class="label">Categories</div></div><div class="stat"><div class="value" data-stat="max_severity">—</div><div class="label">Highest severity</div></div><div class="stat"><div class="value" data-stat="findings">—</div><div class="label">Findings in the sample</div></div><div class="stat"><div class="value" data-stat="score">—</div><div class="label">Score of the sample</div></div><div class="stat"><div class="value" data-stat="decision">—</div><div class="label">Decision of the sample</div></div><div class="stat"><div class="value" data-stat="status">—</div><div class="label">Status of the middleware</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Bulwark — part of the Foundev portfolio.</span>
+    <span>Themed for security &amp; defence.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

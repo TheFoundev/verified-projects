@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Vet the code
+        run: go vet ./...
+      - name: Check the formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Run the tests
+        run: go test -race ./...
