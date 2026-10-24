@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deadman Switch · Deadman Switch</title>
+<meta name="description" content="A dead-man-switch service: every cron job pings a secret address, and when the ping does not come the check goes from up to late and then to down, and the alerts go out by email, by webhook or to the log.">
+<meta name="theme-color" content="hsl(197 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="mark">DW</span>
+    <span><strong>Deadman Switch</strong><small>A heartbeat that alerts when it stops</small></span>
+  </a>
+  <nav class="nav"><a href="/" class="active">Overview</a><a href="console.html" class="">Console</a><a href="login.html" class="">Sign in</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">infrastructure &amp; tooling</span>
+      <h1>The job that stops pinging is the job that matters.</h1>
+      <p class="lede">A dead-man-switch service: every cron job pings a secret address, and when the ping does not come the check goes from up to late and then to down, and the alerts go out by email, by webhook or to the log.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+        <a class='btn ghost' href='login.html'>Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">♥</div>
+          <h3>A ping that says it is alive</h3>
+          <p>Every job pings a secret address and the check knows the job is still running.</p>
+        </article><article class="card reveal">
+          <div class="icon">⏳</div>
+          <h3>Late before down</h3>
+          <p>The grace period gives the job a buffer, and only after the timeout does the check go down.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>And up again</h3>
+          <p>A ping that arrives in time brings the check back from late or down to up.</p>
+        </article><article class="card reveal">
+          <div class="icon">✉</div>
+          <h3>Alerts where you look</h3>
+          <p>The alerts go out by email, by webhook or to the log, once per transition.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛭</div>
+          <h3>Quiet for a while</h3>
+          <p>A check can be muted until a moment in time, so a maintenance does not wake anybody.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛁</div>
+          <h3>Open pings, guarded writes</h3>
+          <p>The pings and the status are open; the changes of a check need its own api token.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">A check holds the schedule, the grace period and the timeout, and its state moves from new to up to late to down and back to up when a ping arrives. The ping endpoint is open, because the uuid of the check is the secret, and the endpoints that change a check need the api token of that check. The background poller looks at the checks that are due, moves the ones that are late or down and dispatches the alerts over the channels of the check.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Python</span><span class="badge">Django 5</span><span class="badge">SQLite</span><span class="badge">REST API</span><span class="badge">State machine</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/v1/summary</code></td><td>The state of the instance: the checks, their state and the pings that came in</td></tr><tr><td><code>GET</code></td><td><code>/api/v1/checks</code></td><td>The checks of the instance (the read token is needed)</td></tr><tr><td><code>POST</code></td><td><code>/api/v1/checks</code></td><td>Create a check (the write token is needed)</td></tr><tr><td><code>GET</code></td><td><code>/api/v1/checks/{uuid}/status</code></td><td>The state of one check, as JSON</td></tr><tr><td><code>GET</code></td><td><code>/api/v1/checks/{uuid}/ping</code></td><td>Ping a check: the ping moves it to up and clears the counters</td></tr><tr><td><code>POST</code></td><td><code>/api/v1/session</code></td><td>Sign in with the api token of a check</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># pip install -r requirements.txt
+# python manage.py migrate     # the database of the checks
+# python manage.py runserver   # the site and the API on http://127.0.0.1:8000
+# python manage.py run_poller  # the background evaluator, in another terminal
+# python manage.py test        # the test suite</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div>
+            <div class="stat"><div class="value" data-stat="checks">—</div><div class="label">Checks</div></div><div class="stat"><div class="value" data-stat="up">—</div><div class="label">Up</div></div><div class="stat"><div class="value" data-stat="late">—</div><div class="label">Late</div></div><div class="stat"><div class="value" data-stat="down">—</div><div class="label">Down</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Deadman Switch — part of the Foundev portfolio.</span>
+    <span>Themed for infrastructure &amp; tooling.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

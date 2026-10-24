@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Deadman Switch</title>
+<meta name="description" content="The sign-in portal of Deadman Switch">
+<meta name="theme-color" content="hsl(197 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="mark">DW</span>
+    <span><strong>Deadman Switch</strong><small>A heartbeat that alerts when it stops</small></span>
+  </a>
+  <nav class="nav"><a href="/" class="">Overview</a><a href="console.html" class="">Console</a><a href="login.html" class="active">Sign in</a></nav>
+</header>
+
+<main id="main" class="auth">
+  <div class="auth-card">
+    <span class="mark">DW</span>
+    <h1 style="font-size:1.6rem">Sign in</h1>
+    <p class="lede" style="margin:8px 0 20px;font-size:.95rem">A dead-man-switch service: every cron job pings a secret address, and when the ping does not come the check goes from up to late and then to down, and the alerts go out by email, by webhook or to the log.</p>
+    <form data-token-login>
+      <div class="field"><label for="tk">Api token</label><input id="tk" name="token" placeholder="the api token of a check" required></div>
+      <button class="btn primary" type="submit" style="width:100%">Sign in</button>
+    </form>
+    <p class="hint" style="margin-top:16px">The api token is the one the check was created with. The ping and the status of a check are open, so a job needs nothing but the uuid of its check.</p>
+    <script>
+      document.querySelector("[data-token-login]").addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(event.target).entries());
+        try {
+          const response = await fetch("/api/v1/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: data.token }),
+          });
+          const answer = await response.json();
+          if (!response.ok) throw new Error(answer.error || "the token is not known");
+          location.href = "/console.html";
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+    </script>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap"><span>Deadman Switch · sign in</span><span><a href="/">Back to the overview</a></span></div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
