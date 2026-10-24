@@ -96,7 +96,7 @@
   document.querySelectorAll("[data-action]").forEach(function (form) {
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
-      const result = form.querySelector("[data-action-result]");
+      const result = form.querySelector("[data-action-result]") || form.parentElement.querySelector("[data-action-result]");
       const button = form.querySelector("button");
       const data = Object.fromEntries(new FormData(form).entries());
       button.disabled = true;
@@ -113,7 +113,9 @@
           .filter((entry) => typeof entry[1] !== "object")
           .map((entry) => entry[0] + ": " + entry[1])
           .join("  ·  ") || "done";
-        if (typeof load === "function") load();
+        if (typeof load === "function") {
+          await load();
+        }
       } catch (error) {
         result.textContent = error.message;
       } finally {

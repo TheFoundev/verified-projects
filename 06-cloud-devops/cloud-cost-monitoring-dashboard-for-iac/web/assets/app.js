@@ -85,9 +85,15 @@ async function load() {
     state.data = payload || {};
     paintStats(state.data);
     paintChart(state.data);
+    const lists = (state.data.lists) || state.data || {};
     document.querySelectorAll("[data-list]").forEach((node) => {
-      const rows = (state.data[node.dataset.list] || []);
-      if (!rows.length) { node.innerHTML = '<tr><td colspan="4" class="muted">Nothing yet.</td></tr>'; return; }
+      const listKey = node.dataset.list;
+      const rows = (lists[listKey] || state.data[listKey] || []);
+      if (!rows.length) {
+        const colSpan = node.querySelectorAll("thead th").length || 4;
+        node.innerHTML = '<tr><td colspan="' + colSpan + '" class="muted">Nothing yet.</td></tr>';
+        return;
+      }
       node.innerHTML = rows.map((row) => {
         const cells = Object.values(row).map((cell) => "<td>" + escapeHtml(String(cell)) + "</td>").join("");
         return "<tr>" + cells + "</tr>";
