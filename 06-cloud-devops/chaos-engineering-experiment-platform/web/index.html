@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaos · Chaos</title>
+<meta name="description" content="Chaos defines an experiment as a list of actions - delay, kill or stress - against a target service, applies them one by one and writes a timeline of applied, recovered and rolled-back events. Before the first action and after every recovery it checks a steady-state hypothesis, and it stops and rolls the actions back when the hypothesis breaks.">
+<meta name="theme-color" content="hsl(195 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Ch</span>
+    <span><strong>Chaos</strong><small>Fault experiments with a steady-state hypothesis</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">data &amp; analytics</span>
+      <h1>Break something on purpose, then check that the service held.</h1>
+      <p class="lede">Chaos defines an experiment as a list of actions - delay, kill or stress - against a target service, applies them one by one and writes a timeline of applied, recovered and rolled-back events. Before the first action and after every recovery it checks a steady-state hypothesis, and it stops and rolls the actions back when the hypothesis breaks.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⚙</div>
+          <h3>Three faults</h3>
+          <p>Validate accepts delay, kill and stress; every other kind is refused.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Steady state</h3>
+          <p>The hypothesis is checked before the first action and after every recovery.</p>
+        </article><article class="card reveal">
+          <div class="icon">↻</div>
+          <h3>Rollback</h3>
+          <p>When the hypothesis breaks the applied actions are recovered in reverse order.</p>
+        </article><article class="card reveal">
+          <div class="icon">◷</div>
+          <h3>Timeline</h3>
+          <p>Every apply, recovery and rollback is an Event with a real timestamp.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Two stores</h3>
+          <p>MemoryStore keeps the results in memory, FileStore writes them to a JSON file.</p>
+        </article><article class="card reveal">
+          <div class="icon">⧉</div>
+          <h3>Pluggable executor</h3>
+          <p>The runner never talks to Kubernetes; it goes through the FaultExecutor interface.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">chaos.go holds the engine. Validate accepts the action kinds delay, kill and stress and checks the hypothesis, and Compare applies the lt, gt and eq operators. Runner.Run walks the actions: it calls FaultExecutor.Apply, waits for the duration of the action, calls Recover and appends an Event for every phase; when the hypothesis breaks it recovers the applied actions in reverse order and marks the result as aborted. The executors are DryRunExecutor, which changes nothing, and LocalExecutor, which really waits, burns CPU and sends SIGTERM to a process id. The results are kept by a Store: MemoryStore in memory and FileStore in a JSON file.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">context.Context</span><span class="badge">encoding/json</span><span class="badge">Runner / FaultExecutor / Store</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of the last experiment</td></tr><tr><td><code>GET</code></td><td><code>/api/experiments</code></td><td>The experiments that were run through this console</td></tr><tr><td><code>GET</code></td><td><code>/api/events</code></td><td>The timeline of the last experiment</td></tr><tr><td><code>POST</code></td><td><code>/api/experiment</code></td><td>Run an experiment and return its result</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -service checkout -action delay
+# go run . -service checkout -action delay -executor local
+# go run . -service checkout -action delay -results runs.json
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="actions_run">—</div><div class="label">Actions run</div></div><div class="stat"><div class="value" data-stat="actions_total">—</div><div class="label">Actions planned</div></div><div class="stat"><div class="value" data-stat="events">—</div><div class="label">Timeline events</div></div><div class="stat"><div class="value" data-stat="affected">—</div><div class="label">Affected services</div></div><div class="stat"><div class="value" data-stat="duration">—</div><div class="label">Total duration</div></div><div class="stat"><div class="value" data-stat="aborted">—</div><div class="label">Aborted</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Chaos — part of the Foundev portfolio.</span>
+    <span>Themed for data &amp; analytics.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
