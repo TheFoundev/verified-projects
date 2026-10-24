@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Costwatch · Costwatch</title>
+<meta name="description" content="Costwatch reads a Terraform plan document, takes the resources of the root module and of the child modules and prices every one of them from a small table of AWS and Google prices. It returns the total, the total per resource type, the total per provider and the resources it could not price, because a resource with no price may still cost money.">
+<meta name="theme-color" content="hsl(212 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Cw</span>
+    <span><strong>Costwatch</strong><small>The monthly cost of a Terraform plan, from a small price table</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">developer tools</span>
+      <h1>What the plan will cost before it is applied.</h1>
+      <p class="lede">Costwatch reads a Terraform plan document, takes the resources of the root module and of the child modules and prices every one of them from a small table of AWS and Google prices. It returns the total, the total per resource type, the total per provider and the resources it could not price, because a resource with no price may still cost money.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">▦</div>
+          <h3>Plan parsing</h3>
+          <p>ParsePlan reads planned_values.root_module and the resources of the child modules.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Price table</h3>
+          <p>A small table of AWS and Google prices; a resource with no price is named, not counted as free.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Totals</h3>
+          <p>EstimateAll returns the total, the total per type and the total per provider.</p>
+        </article><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Provider split</h3>
+          <p>The provider is taken from the type of the resource, the way Terraform writes it.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>JSON API</h3>
+          <p>Handler serves the summary of the plan as JSON over HTTP.</p>
+        </article><article class="card reveal">
+          <div class="icon">⌬</div>
+          <h3>Modules</h3>
+          <p>The resources of a module are part of the plan, not a second plan.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">cost.go holds the model and the prices. ParsePlan reads the resources of planned_values.root_module in the plan JSON and appends the resources of the child modules. EstimateResource prices one resource from its type and its values: instancePrices for aws_instance, databasePrices for aws_db_instance, googleComputePrices for google_compute_instance, a rate per GB for aws_s3_bucket and aws_ebs_volume, and a fixed price for a Google SQL instance. EstimateAll adds the estimates into a Summary with the total, ByType, ByProvider and the names of the Unpriced resources. main.go holds the example plan and the command line, api.go serves the summary as JSON with Handler.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">encoding/json</span><span class="badge">net/http</span><span class="badge">Terraform plan JSON</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The total, the counts and the totals of the plan</td></tr><tr><td><code>GET</code></td><td><code>/api/resources</code></td><td>The monthly price of every resource of the plan</td></tr><tr><td><code>GET</code></td><td><code>/api/totals</code></td><td>The totals per resource type and per provider</td></tr><tr><td><code>POST</code></td><td><code>/api/estimate</code></td><td>Price a Terraform plan that is sent with the request</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -plan plan.json
+# go run . -listen :8080
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="total">—</div><div class="label">Monthly total (USD)</div></div><div class="stat"><div class="value" data-stat="resources">—</div><div class="label">Resources</div></div><div class="stat"><div class="value" data-stat="types">—</div><div class="label">Resource types</div></div><div class="stat"><div class="value" data-stat="providers">—</div><div class="label">Providers</div></div><div class="stat"><div class="value" data-stat="unpriced">—</div><div class="label">Without a price</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Costwatch — part of the Foundev portfolio.</span>
+    <span>Themed for developer tools.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
