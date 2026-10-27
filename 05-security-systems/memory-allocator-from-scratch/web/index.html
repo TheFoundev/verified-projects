@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Allocator · project console</title>
+<meta name="description" content="A thread-safe malloc and free replacement built on a single mmap arena: 16-byte alignment, first-fit allocation, block splitting and a coalescing free list.">
+<meta name="theme-color" content="hsl(265 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">MA</span>
+    <span><strong>Memory Allocator</strong><small>malloc on mmap, with coalescing</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">systems · C</span>
+      <h1>Every block accounted for.</h1>
+      <p class="lede">A thread-safe malloc and free replacement built on a single mmap arena: 16-byte alignment, first-fit allocation, block splitting and a coalescing free list.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is a C library, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">▦</div>
+          <h3>One mmap arena</h3>
+          <p>The allocator reserves its arena once and hands out 16-byte aligned blocks from it.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>First fit and split</h3>
+          <p>A block larger than the request is split, so the remainder stays available.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Coalescing free list</h3>
+          <p>Adjacent free blocks merge on release, which keeps fragmentation bounded.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⛭</div>
+          <h3>The full C surface</h3>
+          <p>malloc, free, calloc and realloc are implemented, alongside statistics for the live arena.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Tested from the host</h3>
+          <p>The suite exercises alignment, reuse, splitting, coalescing and realloc without a special runtime.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">Allocation walks the free list for the first block that fits, splits it when there is enough slack, and updates the live statistics. Free marks the block and merges it with its neighbours. The project is a drop-in style library with a small CLI that prints the arena after a scripted sequence of allocations and frees, which makes the coalescing visible.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">C</span><span class="badge">POSIX</span><span class="badge">mmap</span><span class="badge">Make</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>make && ./build/app</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>make</code></td><td>build the library and the demo</td></tr><tr><td><code>./build/app</code></td><td>run the allocation demo</td></tr><tr><td><code>make test</code></td><td>run the test suite</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Memory Allocator — part of the Foundev portfolio.</span>
+    <span>A C library.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
