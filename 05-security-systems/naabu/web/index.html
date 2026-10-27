@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knock · Knock</title>
+<meta name="description" content="Knock reads a port list like 22,80,8000-8010, dials every port of a host at the same time and writes the state of each one. A port that accepts the connection is open and a port that refuses it is closed. The host list also understands a network written as 10.0.0.0/30, which is expanded into its addresses. The results are written as JSON, with the open ports of the host.">
+<meta name="theme-color" content="hsl(260 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Kn</span>
+    <span><strong>Knock</strong><small>TCP connect scans over a list of ports</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">media &amp; audio</span>
+      <h1>Ask every port of a host and keep the answers that came back.</h1>
+      <p class="lede">Knock reads a port list like 22,80,8000-8010, dials every port of a host at the same time and writes the state of each one. A port that accepts the connection is open and a port that refuses it is closed. The host list also understands a network written as 10.0.0.0/30, which is expanded into its addresses. The results are written as JSON, with the open ports of the host.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Port lists</h3>
+          <p>ParsePorts reads 22,80,1000-1005, expands the ranges and sorts the ports.</p>
+        </article><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Networks</h3>
+          <p>ParseHosts expands a network written as 10.0.0.0/30 into its four addresses.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Parallel dials</h3>
+          <p>Scan starts one goroutine per port and waits for them with a WaitGroup.</p>
+        </article><article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Two states</h3>
+          <p>A port that accepts the connection is open, every other port is closed.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>The open list</h3>
+          <p>OpenPorts keeps the open ports and sorts them.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>JSON output</h3>
+          <p>main.go writes the host, the results and the open ports as JSON.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">scanner.go holds the scanner. ParsePorts reads the list, expands the ranges, drops the ports that are out of range and sorts what is left; ParseHosts reads a list of hosts and networks, and expandNetwork turns a network into its addresses with nextAddress as the address behind the last one. Scan dials every port of a host at the same time with net.DialTimeout and writes a PortResult with the state open or closed; OpenPorts filters the open ones and sorts them. DefaultTimeout is 400 milliseconds. main.go reads the host, the ports and the timeout from the command line and writes the results and the open ports as JSON.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">net.DialTimeout</span><span class="badge">sync.WaitGroup</span><span class="badge">net.IPNet</span><span class="badge">encoding/json</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The ports of the list and the number of open and closed ports</td></tr><tr><td><code>GET</code></td><td><code>/api/results</code></td><td>The state of every port of every host</td></tr><tr><td><code>GET</code></td><td><code>/api/ports</code></td><td>The ports of the first host with their state</td></tr><tr><td><code>GET</code></td><td><code>/api/hosts</code></td><td>The hosts with the number of open and closed ports</td></tr><tr><td><code>GET</code></td><td><code>/api/open</code></td><td>The ports that accepted the connection</td></tr><tr><td><code>POST</code></td><td><code>/api/scan</code></td><td>Scan the ports of a host and answer with the number of open ports</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -host 127.0.0.1 -ports 22,80,8000-8010
+# go run . -host 10.0.0.1 -ports 1-100 -timeout 1s
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="ports">—</div><div class="label">Ports in the list</div></div><div class="stat"><div class="value" data-stat="hosts">—</div><div class="label">Hosts</div></div><div class="stat"><div class="value" data-stat="open">—</div><div class="label">Open ports</div></div><div class="stat"><div class="value" data-stat="closed">—</div><div class="label">Closed ports</div></div><div class="stat"><div class="value" data-stat="timeout_ms">—</div><div class="label">Timeout (ms)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Knock — part of the Foundev portfolio.</span>
+    <span>Themed for media &amp; audio.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
