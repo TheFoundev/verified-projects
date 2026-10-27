@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phishdrill · Phishdrill</title>
+<meta name="description" content="Phishdrill plans a campaign: every target gets a send record with a random tracking id. Opens, clicks and reports are recorded on the sends, and Summary computes the funnel of a campaign: the sends, the opens, the clicks, the reports, the open and the click rate over the sends and the report rate over the opens. No mail is sent, the delivery is simulated.">
+<meta name="theme-color" content="hsl(170 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Pd</span>
+    <span><strong>Phishdrill</strong><small>Plan an awareness campaign and read its funnel</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">web &amp; frontend</span>
+      <h1>A phishing drill, counted as it happens.</h1>
+      <p class="lede">Phishdrill plans a campaign: every target gets a send record with a random tracking id. Opens, clicks and reports are recorded on the sends, and Summary computes the funnel of a campaign: the sends, the opens, the clicks, the reports, the open and the click rate over the sends and the report rate over the opens. No mail is sent, the delivery is simulated.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Campaigns</h3>
+          <p>A campaign has a name, a template and a map of sends, keyed by the tracking id.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Tracking ids</h3>
+          <p>token returns eight random bytes in hexadecimal, with a counter as the fallback.</p>
+        </article><article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Events</h3>
+          <p>RecordOpen, RecordClick and RecordReport set the flags of one send and report an unknown tracking id.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>The funnel</h3>
+          <p>Summary counts the sends, the opens, the clicks and the reports of a campaign.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Three rates</h3>
+          <p>The open rate and the click rate are over the sends, the report rate is over the opens.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>No mail is sent</h3>
+          <p>The delivery is simulated, so the events are recorded by the program itself.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">campaign.go holds the model. Campaign has a name, a template and a map of the sends, keyed by the tracking id. Plan creates a Send for every target that is not empty; token returns eight random bytes in hexadecimal and falls back to a counter when the random source fails, so two sends never share a tracking id. RecordOpen sets the flag of a send, RecordClick sets the opened and the clicked flag, and RecordReport sets the reported flag; mark looks the send up in the map and returns false when the tracking id is unknown. Summary counts the flags and computes the open and the click rate over the sends and the report rate over the opens. main.go takes the campaign, the template and the targets from the command line and records a plausible funnel: the first mail is opened, the second one is clicked and reported.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">crypto/rand</span><span class="badge">encoding/json</span><span class="badge">time</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of all the campaigns together</td></tr><tr><td><code>GET</code></td><td><code>/api/campaigns</code></td><td>The campaigns with the funnel of each one</td></tr><tr><td><code>GET</code></td><td><code>/api/sends</code></td><td>Every send with its tracking id and its flags</td></tr><tr><td><code>GET</code></td><td><code>/api/events</code></td><td>The opens, the clicks and the reports that were recorded</td></tr><tr><td><code>POST</code></td><td><code>/api/campaign</code></td><td>Plan a campaign with its targets and answer with the funnel</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -targets ana@example.com,bo@example.com
+# go run . -campaign 'Q3 awareness' -template password-reset -targets ana@example.com,bo@example.com
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="campaigns">—</div><div class="label">Campaigns</div></div><div class="stat"><div class="value" data-stat="sent">—</div><div class="label">Sends</div></div><div class="stat"><div class="value" data-stat="opened">—</div><div class="label">Opens</div></div><div class="stat"><div class="value" data-stat="clicked">—</div><div class="label">Clicks</div></div><div class="stat"><div class="value" data-stat="reported">—</div><div class="label">Reports</div></div><div class="stat"><div class="value" data-stat="open_rate">—</div><div class="label">Open rate (%)</div></div><div class="stat"><div class="value" data-stat="click_rate">—</div><div class="label">Click rate (%)</div></div><div class="stat"><div class="value" data-stat="report_rate">—</div><div class="label">Report rate (%)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Phishdrill — part of the Foundev portfolio.</span>
+    <span>Themed for web &amp; frontend.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
