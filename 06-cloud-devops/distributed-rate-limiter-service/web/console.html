@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Throttle</title>
+<meta name="description" content="Throttle gives every key a token bucket: a burst of requests is let through at once and the bucket refills at a fixed rate. The counters live in a Store, so the in-memory store limits one process while the Redis store lets several instances share one limit. A middleware answers 429 with the rate limit headers, the keys that are not used any more are swept away and the counters are exported in the Prometheus text format.">
+<meta name="theme-color" content="hsl(48 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Th</span>
+    <span><strong>Throttle</strong><small>A token bucket per key, in memory or shared over Redis</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Throttle</h1>
+        <p class="lede" style="margin-top:8px">The counters of the limiter, the state of every bucket and the outcome of the simulated requests.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+      </div>
+    </div>
+    <div class="stats reveal"><div class="stat"><div class="value" data-stat="rate">—</div><div class="label">Tokens per second</div></div><div class="stat"><div class="value" data-stat="burst">—</div><div class="label">Bucket size</div></div><div class="stat"><div class="value" data-stat="allowed">—</div><div class="label">Allowed</div></div><div class="stat"><div class="value" data-stat="blocked">—</div><div class="label">Blocked</div></div><div class="stat"><div class="value" data-stat="keys">—</div><div class="label">Keys</div></div></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+  <div class="panel-head"><h3>The requests</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The simulated requests, the answer of the limiter and the tokens left.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Request</th><th>Allowed</th><th>Remaining</th></tr></thead>
+    <tbody data-list="requests"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The buckets</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The buckets the limiter knows and the tokens they hold.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Key</th><th>Tokens</th><th>Last used</th></tr></thead>
+    <tbody data-list="keys"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The Prometheus output</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The counters as the exporter writes them.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody data-list="metrics"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Count requests</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The simulation of the limiter: it counts the requests of one key and answers with the counters.</p>
+<form data-action style="margin-top:14px">
+<div class="field"><label for="key">Key</label><input id="key" name="key" value="client-1"></div><div class="field"><label for="count">Requests</label><input id="count" name="count" value="8"></div><div class="field"><label for="interval">Milliseconds between the requests</label><input id="interval" name="interval" value="200"></div>
+  <button class="btn primary" type="submit">Count the requests</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The service of the project</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The service of the project answers on its own port: the counters in the Prometheus format, the state of the store and the check of one key.</p><div class="actions" style="margin-top:14px"><a class="btn" href="metrics">/metrics</a><a class="btn" href="healthz">/healthz</a><a class="btn" href="v1/check">/v1/check</a></div></div>
+</section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Throttle · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("[data-refresh]").forEach(function (button) {
+    button.addEventListener("click", function () { location.reload(); });
+  });
+});
+</script>
+</body>
+</html>
