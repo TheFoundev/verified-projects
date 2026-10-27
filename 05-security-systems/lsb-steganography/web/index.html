@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LSB Steganography · LSB Steganography</title>
+<meta name="description" content="A covert channel: the message is written into the least significant bit of the blue channel of an image, with a length prefix so the reader knows how much to read back, and the cover and the stego image are compared with the PSNR.">
+<meta name="theme-color" content="hsl(183 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">LS</span>
+    <span><strong>LSB Steganography</strong><small>A message inside the last bit of a pixel</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">science &amp; research</span>
+      <h1>The picture looks the same. The message is there.</h1>
+      <p class="lede">A covert channel: the message is written into the least significant bit of the blue channel of an image, with a length prefix so the reader knows how much to read back, and the cover and the stego image are compared with the PSNR.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+        
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">◉</div>
+          <h3>One bit per pixel</h3>
+          <p>The message travels in the lowest bit of the blue channel.</p>
+        </article><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Length-prefixed, so it can be read back</h3>
+          <p>The first thirty-two bits say how long the message is.</p>
+        </article><article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>An exact check</h3>
+          <p>The decoder reports whether the message came back unchanged.</p>
+        </article><article class="card reveal">
+          <div class="icon">◔</div>
+          <h3>PSNR says how little it shows</h3>
+          <p>The distance between the cover and the stego image is measured.</p>
+        </article><article class="card reveal">
+          <div class="icon">▣</div>
+          <h3>Both pictures are kept</h3>
+          <p>The cover and the stego image are written next to each other.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚠</div>
+          <h3>A tiny payload, and no encryption</h3>
+          <p>The channel is small, unencrypted and dies with a re-save.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The message is encoded as a four-byte big-endian length followed by its UTF-8 bytes, and every bit is written into the lowest bit of one blue-channel pixel in row order. The decoder reads the first thirty-two bits as the length and then that many bytes back. The cover is a generated gradient with a little noise, and the PSNR of the two images says how little the payload disturbs it.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Python</span><span class="badge">NumPy</span><span class="badge">Pillow</span><span class="badge">Least-significant-bit encoding</span><span class="badge">PSNR</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The capacity of the image, the size of the message and the PSNR of the pair</td></tr><tr><td><code>POST</code></td><td><code>/api/encode</code></td><td>Write a message into a cover image and answer with the message that was read back</td></tr><tr><td><code>POST</code></td><td><code>/api/decode</code></td><td>Read the message out of a stego image</td></tr><tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Run the pipeline again and answer with the new summary</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># pip install -r requirements.txt
+# python main.py run                       # encode the message and decode it back
+# python main.py demo
+# python3 web/server.py --port 8208       # this site
+# pytest -q                                # the test suite</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div>
+            <div class="stat"><div class="value" data-stat="capacity_bits">—</div><div class="label">Capacity (bits)</div></div><div class="stat"><div class="value" data-stat="message_bits">—</div><div class="label">Message (bits)</div></div><div class="stat"><div class="value" data-stat="psnr">—</div><div class="label">PSNR (dB)</div></div><div class="stat"><div class="value" data-stat="decoded_ok">—</div><div class="label">Decoded</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>LSB Steganography — part of the Foundev portfolio.</span>
+    <span>Themed for science &amp; research.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
