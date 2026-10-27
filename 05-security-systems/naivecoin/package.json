@@ -1,0 +1,14 @@
+{
+  "name": "naivecoin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A minimal cryptocurrency implementation with a block explorer UI for learning blockchain internals safely.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
