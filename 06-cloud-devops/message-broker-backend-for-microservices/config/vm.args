@@ -1,0 +1,5 @@
+%% VM arguments for message_broker_backend
+-sname message_broker_backend
+-setcookie dev_cookie
++K true
++A 16

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woodpecker CI · project console</title>
+<meta name="description" content="A self-hosted CI server in miniature: a small YAML subset parser for pipeline steps, build records with status and logs, trigger and run endpoints, and an in-memory build queue.">
+<meta name="theme-color" content="hsl(35 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">WP</span>
+    <span><strong>Woodpecker CI</strong><small>Parse the pipeline, track the build</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">cloud · Go</span>
+      <h1>Trigger a build, watch the steps finish.</h1>
+      <p class="lede">A self-hosted CI server in miniature: a small YAML subset parser for pipeline steps, build records with status and logs, trigger and run endpoints, and an in-memory build queue.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is a Go CI service, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>A YAML subset parser</h3>
+          <p>Pipeline steps are parsed without a YAML dependency.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Trigger and run endpoints</h3>
+          <p>A webhook-style trigger creates a build and runs its steps.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Build records with logs</h3>
+          <p>Every build keeps its status and the log lines produced by each step.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◷</div>
+          <h3>An in-memory queue</h3>
+          <p>Builds are queued and executed in order.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◫</div>
+          <h3>Runs without Docker</h3>
+          <p>The pipeline model and execution are local; no container runtime is required.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">main.go starts the HTTP server, server.go holds the build queue, the parser and the endpoints. The CSV stack names a real container runner and SQLite persistence; this build keeps builds in memory and simulates step execution, which the README states plainly. The Go test suite covers parsing, triggering and status transitions.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go</span><span class="badge">HTTP</span><span class="badge">YAML</span><span class="badge">CI/CD</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>go run . -listen :8084</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>go run . -listen :8084</code></td><td>start the CI server</td></tr><tr><td><code>go test ./...</code></td><td>run the Go test suite</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Woodpecker CI — part of the Foundev portfolio.</span>
+    <span>A Go CI service.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

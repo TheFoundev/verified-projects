@@ -1,0 +1,54 @@
+{application, message_broker_backend,
+ [{description, "Asynchronous order-processing backend on RabbitMQ quorum queues"},
+  {vsn, "0.1.0"},
+  {registered, [mbb_sup,
+                mbb_metrics,
+                mbb_connection,
+                mbb_topology,
+                mbb_publisher,
+                mbb_consumer,
+                mbb_http]},
+  {mod, {mbb_sup, []}},
+  {modules, [mbb_sup,
+             mbb_topology,
+             mbb_connection,
+             mbb_publisher,
+             mbb_consumer,
+             mbb_order,
+             mbb_metrics,
+             mbb_http,
+             mbb_burst]},
+  {applications, [kernel,
+                  stdlib,
+                  sasl,
+                  amqp_client,
+                  rabbit_common,
+                  prometheus]},
+  {env, [
+    %% AMQP endpoint (overridable with MBB_AMQP_* OS variables)
+    {amqp_host, "localhost"},
+    {amqp_port, 5672},
+    {amqp_username, <<"guest">>},
+    {amqp_password, <<"guest">>},
+    {amqp_vhost, <<"/">>},
+    {heartbeat_seconds, 30},
+    %% consumer backpressure: unacked deliveries allowed in flight
+    {prefetch_count, 32},
+    %% connection reconnect backoff
+    {backoff_base_ms, 500},
+    {backoff_max_ms, 30000},
+    %% retry pipeline: orders.retry.1..N with TTL base * 4^(N-1)
+    {max_retries, 3},
+    {retry_ttl_base_ms, 5000},
+    %% publisher confirms
+    {confirm_timeout_ms, 5000},
+    {publish_max_attempts, 3},
+    %% idempotency seen-cache entry lifetime
+    {seen_ttl_ms, 600000},
+    %% HTTP interface
+    {http_port, 8080},
+    %% burst generator defaults
+    {burst_count, 500},
+    {burst_rate, 200}
+  ]}
+ ]}.

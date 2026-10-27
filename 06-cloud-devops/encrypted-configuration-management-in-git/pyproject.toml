@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secretsync"
+version = "0.1.0"
+description = "Encrypted configuration management in Git (SOPS + age workflow manager)"
+readme = "README.md"
+license = "MPL-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "Foundev" }]
+keywords = ["sops", "age", "secrets", "gitops", "ansible"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Security :: Cryptography",
+]
+
+# stdlib-first on purpose: no runtime dependencies
+dependencies = []
+
+[project.optional-dependencies]
+# The development extra: the test suite and nothing else (the package
+# itself has no runtime dependency).
+dev = ["pytest>=8"]
+
+[project.scripts]
+secretsync = "secretsync.cli:main"
+
+[tool.setuptools]
+packages = ["secretsync"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"

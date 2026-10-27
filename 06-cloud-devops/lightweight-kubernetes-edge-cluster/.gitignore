@@ -1,0 +1,27 @@
+# kubeconfig files copied off a cluster node
+.kubeconfig
+kubeconfig
+*.kubeconfig
+
+# Node tokens and any local secrets
+*.token
+secrets/
+values.local.yaml
+values.*.local.yaml
+
+# etcd snapshots and DB backups
+*.db
+*.db.gz
+snapshots/
+backups/
+*.sql
+*.sql.gz
+
+# Local scratch
+/tmp/
+*.log
+.DS_Store
+
+# Python cache from tools/validate.py
+__pycache__/
+*.pyc

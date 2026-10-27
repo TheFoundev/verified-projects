@@ -1,0 +1,101 @@
+# Example: decrypt-in-CI pipeline for secretsync.
+#
+# This directory is deliberately named `workflows-example` so GitHub will
+# not execute it from this repository; copy it to `.github/workflows/`
+# in your own project to activate it.
+#
+# Contract:
+#   * the age identity lives only as a CI secret (never in the repo)
+#   * SECRETSYNC_RUN_ID marker + CI=true satisfy the decrypt policy
+#   * plaintext exists only inside the runner's temp dir, then is wiped
+#   * `secretsync audit verify` + `secretsync check` gate every run
+
+name: deploy-from-encrypted-config
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  SOPS_VERSION: v3.13.3
+  AGE_VERSION: v1.3.2
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout ciphertext only
+        uses: actions/checkout@v4
+
+      - name: Install sops and age
+        run: |
+          curl -fsSL -o /tmp/sops "https://github.com/getsops/sops/releases/download/${{ env.SOPS_VERSION }}/sops-${{ env.SOPS_VERSION }}.linux.amd64"
+          install -m 0755 /tmp/sops /usr/local/bin/sops
+          curl -fsSL -o /tmp/age.tgz "https://github.com/FiloSottile/age/releases/latest/download/age-${{ env.AGE_VERSION }}-linux-amd64.tar.gz"
+          tar -xzf /tmp/age.tgz -C /tmp
+          install -m 0755 /tmp/age/age /usr/local/bin/age
+          sops --version
+          age --version
+
+      - name: Restore the age identity from the CI secret store
+        env:
+          CI_AGE_IDENTITY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          umask 077
+          printf '%s\n' "$CI_AGE_IDENTITY" > "$RUNNER_TEMP/ci.agekey"
+          echo "SOPS_AGE_KEY_FILE=$RUNNER_TEMP/ci.agekey" >> "$GITHUB_ENV"
+          # marker expected by decrypt_policy.marker_var
+          echo "SECRETSYNC_RUN_ID=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
+
+      - name: Verify the audit trail before trusting anything
+        run: python3 -m secretsync audit verify --check-files
+
+      - name: Decrypt (CI-gated) into the runner temp dir only
+        run: |
+          python3 -m secretsync decrypt \
+            environments/staging/secrets.enc.yaml \
+            --env staging \
+            --output "$RUNNER_TEMP/app-secrets.yaml"
+
+      - name: Prove no plaintext is tracked in the repository
+        run: python3 -m secretsync check
+
+      - name: Deploy with Ansible (loads decrypted vars, then shreds them)
+        run: |
+          python3 -m pip install --user ansible-core
+          ansible-playbook -i ansible/inventory/staging.yml ansible/playbook.yml
+        env:
+          CI: "true"
+
+      - name: Shred plaintext material
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/app-secrets.yaml" "$RUNNER_TEMP/ci.agekey"
+          find "$RUNNER_TEMP" -maxdepth 1 -name 'secretsync-*.dec.yaml' -delete
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production   # required reviewers gate
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sops and age
+        run: |
+          curl -fsSL -o /tmp/sops "https://github.com/getsops/sops/releases/download/${{ env.SOPS_VERSION }}/sops-${{ env.SOPS_VERSION }}.linux.amd64"
+          install -m 0755 /tmp/sops /usr/local/bin/sops
+      - name: Restore the age identity from the CI secret store
+        env:
+          CI_AGE_IDENTITY: ${{ secrets.SOPS_AGE_KEY_PROD }}
+        run: |
+          umask 077
+          printf '%s\n' "$CI_AGE_IDENTITY" > "$RUNNER_TEMP/ci.agekey"
+          echo "SOPS_AGE_KEY_FILE=$RUNNER_TEMP/ci.agekey" >> "$GITHUB_ENV"
+          echo "SECRETSYNC_RUN_ID=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
+      - name: Decrypt + audit + deploy
+        run: |
+          python3 -m secretsync audit verify
+          python3 -m secretsync decrypt environments/prod/secrets.enc.yaml --env prod --output "$RUNNER_TEMP/app-secrets.yaml"
+          python3 -m secretsync check

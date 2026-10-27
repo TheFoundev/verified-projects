@@ -1,0 +1,19 @@
+# Java/Maven
+*.class
+*.log
+*.jar
+target/
+out/
+.tools/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+*~
+EOF
+echo "done"

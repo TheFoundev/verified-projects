@@ -1,0 +1,29 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-test-connection
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: pg-check
+      image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+      command:
+        - sh
+        - -c
+        - |
+          set -eu
+          pg_isready -h {{ include "edge-stateful.fullname" . }}-postgres -p {{ .Values.postgres.service.port }} -U {{ .Values.postgres.username }}
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+{{- end }}

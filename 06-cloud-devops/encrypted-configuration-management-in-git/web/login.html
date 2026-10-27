@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Secretsync</title>
+<meta name="description" content="The sign-in portal of Secretsync">
+<meta name="theme-color" content="hsl(346 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">SS</span>
+    <span><strong>Secretsync</strong><small>Secrets in Git, encrypted per environment</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="">Console</a><a href="login.html" class="active">Sign in</a></nav>
+</header>
+
+<main id="main" class="auth">
+  <div class="auth-card">
+    <span class="mark">SS</span>
+    <h1 style="font-size:1.6rem">Sign in</h1>
+    <p class="lede" style="margin:8px 0 20px;font-size:.95rem">secretsync keeps the secrets of every environment encrypted inside a Git repository: each environment has its own age recipients, decryption is only allowed inside CI, key rotation keeps the old recipients readable for a while, and every operation lands in a hash-chained audit trail.</p>
+    <form data-login>
+      <div class="field"><label for="u">User</label><input id="u" name="username" value="demo" autocomplete="username" required></div>
+      <div class="field"><label for="p">Password</label><input id="p" name="password" type="password" value="demo123" autocomplete="current-password" required></div>
+      <button class="btn primary" type="submit" style="width:100%">Sign in</button>
+    </form>
+    <p class="hint" style="margin-top:16px">The demo account is <code>demo</code> / <code>demo123</code>. The password is stored as a salted hash and the session is a signed, http-only cookie.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap"><span>Secretsync · sign in</span><span><a href="index.html">Back to the overview</a></span></div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

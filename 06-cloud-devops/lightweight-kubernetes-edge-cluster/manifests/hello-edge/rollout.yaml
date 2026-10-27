@@ -1,0 +1,22 @@
+# manifests/hello-edge/rollout.yaml
+#
+# Optional: a Service + PDB pair for the hello-edge demo, kept in a separate
+# file so `kubectl apply -f manifests/hello-edge/deployment.yaml` alone is a
+# minimal example. Apply this too to try draining a node under a budget:
+#
+#   kubectl apply -f manifests/hello-edge/rollout.yaml
+#   kubectl -n edge-demo get pdb
+#
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hello-edge
+  namespace: edge-demo
+  labels:
+    app.kubernetes.io/name: hello-edge
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello-edge

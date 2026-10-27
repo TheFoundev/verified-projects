@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Status</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    fieldset { border: 1px solid #ccc; margin-bottom: 1rem; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #ddd; padding: 0.45rem; text-align: left; }
+    .up { color: #157347; font-weight: 600; }
+    .down { color: #b02a37; font-weight: 600; }
+    .unknown { color: #6c757d; }
+    form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <h1>Status</h1>
+  <div id="overall">loading</div>
+  <fieldset>
+    <legend>Add monitor</legend>
+    <form id="add">
+      <input id="name" placeholder="name" aria-label="Monitor name" required>
+      <input id="url" placeholder="https://example.com" aria-label="Monitor URL" required>
+      <input id="interval" type="number" value="60" min="5" title="seconds">
+      <button type="submit">Add</button>
+    </form>
+  </fieldset>
+  <table id="monitors">
+    <thead><tr><th>Name</th><th>URL</th><th>Status</th><th>Latency</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script src="/app.js"></script>
+</body>
+</html>

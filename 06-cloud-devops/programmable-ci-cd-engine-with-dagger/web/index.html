@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ratchet · Ratchet</title>
+<meta name="description" content="Ratchet takes a pipeline of steps with an image, a command and the steps it needs. Order puts the steps in dependency order and refuses an unknown dependency, a cycle and a step that is defined twice. Every step gets a digest that is built from its own content and from the digests of the steps it needs, so a change upstream changes the key of everything below it. A step whose digest is in the cache is skipped and reported as a cache hit.">
+<meta name="theme-color" content="hsl(196 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Rt</span>
+    <span><strong>Ratchet</strong><small>A step graph with a content cache</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">networking &amp; traffic</span>
+      <h1>Run the steps in order, and keep the ones that already ran.</h1>
+      <p class="lede">Ratchet takes a pipeline of steps with an image, a command and the steps it needs. Order puts the steps in dependency order and refuses an unknown dependency, a cycle and a step that is defined twice. Every step gets a digest that is built from its own content and from the digests of the steps it needs, so a change upstream changes the key of everything below it. A step whose digest is in the cache is skipped and reported as a cache hit.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>A step graph</h3>
+          <p>A step has an image, a command, the steps it needs, retries, a timeout and its own environment.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Order and its three errors</h3>
+          <p>Order refuses an unknown dependency, a cycle and a step that is defined twice.</p>
+        </article><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Content digests</h3>
+          <p>digestOf hashes the step and the digests of the steps it needs, so a change upstream changes the key below it.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Two executors</h3>
+          <p>HostExecutor runs the command in a shell; RecordingExecutor only records what it would do.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Two caches</h3>
+          <p>MemoryCache keeps the digests in memory and FileCache writes one file per digest in a directory.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Retries and a timeout</h3>
+          <p>A failing step is tried again as often as the step asks, and a step that runs too long fails.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">engine.go holds the engine. Step carries a name, an image, a command, the steps it needs, a number of retries, a timeout, its environment and the flag that keeps the value of a variable out of the log. Order walks the steps and returns them in dependency order; it refuses an unknown dependency, a cycle and a step that is defined twice. digestOf hashes the name, the image, the command, the digests of the steps it needs and the environment into a SHA-256. The Executor interface runs a step: HostExecutor runs the command with exec.CommandContext in a shell and captures the output, RecordingExecutor only records what it would do. The Cache interface keeps the digests: MemoryCache in memory and FileCache as one file per digest in a directory. Engine.Run walks the order, skips the steps whose digest is in the cache, retries a failing step and stops at the first step that fails. main.go reads the sample pipeline, the executor, the cache directory and the pipeline file from the command line. The steps run as recorded commands on the machine; there is no container engine behind them.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">crypto/sha256</span><span class="badge">context.Context</span><span class="badge">os/exec</span><span class="badge">encoding/json</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of the engine: steps, cache hits, attempts and digests</td></tr><tr><td><code>GET</code></td><td><code>/api/steps</code></td><td>The steps of the pipeline with their image and their command</td></tr><tr><td><code>GET</code></td><td><code>/api/order</code></td><td>The steps in the order Order returns them</td></tr><tr><td><code>GET</code></td><td><code>/api/results</code></td><td>The results of the run of the pipeline</td></tr><tr><td><code>GET</code></td><td><code>/api/digests</code></td><td>The digest of every step</td></tr><tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Run a pipeline with the RecordingExecutor and answer with the number of cache hits</td></tr><tr><td><code>POST</code></td><td><code>/api/order</code></td><td>The order of the steps that are sent, or the error of Order</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -demo -executor host
+# go run . -cache .cache -pipeline pipeline.json
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="steps">—</div><div class="label">Steps</div></div><div class="stat"><div class="value" data-stat="cached">—</div><div class="label">Cache hits</div></div><div class="stat"><div class="value" data-stat="attempts">—</div><div class="label">Attempts</div></div><div class="stat"><div class="value" data-stat="duration_ms">—</div><div class="label">Duration (ms)</div></div><div class="stat"><div class="value" data-stat="digests">—</div><div class="label">Digests</div></div><div class="stat"><div class="value" data-stat="pipeline">—</div><div class="label">Pipeline</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Ratchet — part of the Foundev portfolio.</span>
+    <span>Themed for networking &amp; traffic.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Secrets</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    fieldset { border: 1px solid #ccc; margin-bottom: 1rem; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #ddd; padding: 0.4rem; text-align: left; }
+    #token { width: 100%; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Secrets</h1>
+  <fieldset>
+    <legend>API token</legend>
+    <input id="token" placeholder="x-api-token printed at startup" aria-label="API token">
+  </fieldset>
+  <fieldset>
+    <legend>Store a secret</legend>
+    <label>Name <input id="name" placeholder="database/password"></label>
+    <label>Value <input id="value" type="password"></label>
+    <button id="save">Save</button>
+  </fieldset>
+  <fieldset>
+    <legend>Secrets</legend>
+    <table id="secrets"><thead><tr><th>Name</th><th>Updated</th><th></th></tr></thead><tbody></tbody></table>
+  </fieldset>
+  <fieldset>
+    <legend>Audit</legend>
+    <ul id="audit"></ul>
+  </fieldset>
+  <script src="/app.js"></script>
+</body>
+</html>

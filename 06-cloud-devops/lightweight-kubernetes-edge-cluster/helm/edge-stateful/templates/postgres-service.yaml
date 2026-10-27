@@ -1,0 +1,45 @@
+{{- if .Values.postgres.enabled }}
+{{/*
+Headless Service for the Postgres StatefulSet: stable DNS per pod
+(<pod>.<service>.<namespace>.svc.cluster.local) for stateful discovery.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-postgres-headless
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.service.port }}
+      targetPort: postgres
+---
+{{/*
+Client Service for normal app access.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-postgres
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.service.port }}
+      targetPort: postgres
+{{- end }}

@@ -1,0 +1,10 @@
+---
+# Inventory: staging environment.
+all:
+  children:
+    app:
+      hosts:
+        app-staging.internal:
+          inventory_environment: staging
+          ansible_host: app-staging.internal
+          ansible_user: deploy

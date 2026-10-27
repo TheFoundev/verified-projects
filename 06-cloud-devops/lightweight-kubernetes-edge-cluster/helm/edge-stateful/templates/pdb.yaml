@@ -1,0 +1,44 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+{{/*
+PodDisruptionBudgets protect availability during voluntary disruption
+(node drain, upgrades). One PDB per stateful component.
+
+Note: with a single replica (the common edge case) minAvailable=1 means a
+drain will not evict the pod until it can be rescheduled; that is intentional
+so an operator notices rather than silently losing the pod. For multi-replica
+deployments this keeps at least one member serving.
+*/}}
+{{- if .Values.postgres.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-postgres
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: postgres
+---
+{{- end }}
+{{- if .Values.cache.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-cache
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: cache
+{{- end }}
+{{- end }}

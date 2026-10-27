@@ -1,0 +1,114 @@
+# helm/edge-stateful/values.yaml
+#
+# Default values for the edge-stateful chart. These targets assume x86_64 VMs
+# with a few GB of RAM. Override with values.pi.yaml on Raspberry Pi agents.
+#
+# Everything here is non-secret by design. Database passwords are created at
+# install time from an existing Secret or a generated one; this chart does not
+# ship credentials.
+
+# --- Postgres (primary stateful workload) ----------------------------------
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16.4-alpine"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 5432
+  # StorageClass is always local-path for this edge setup: state lives on the
+  # node's local disk. The chart never sets a cloud provisioner.
+  storage:
+    className: local-path
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 6
+    liveness:
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 6
+  # env: database name and user are non-secret; the password comes from a
+  # Secret reference (see secret.name below).
+  database: edgeapp
+  username: edgeuser
+  # Name of a pre-existing Secret holding the key `postgres-password`.
+  # If left empty the chart creates one with a random value at install time.
+  existingSecret: ""
+
+# --- Cache (Redis-compatible) ----------------------------------------------
+cache:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 6379
+  storage:
+    className: local-path
+    size: 1Gi
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 6
+    liveness:
+      initialDelaySeconds: 15
+      periodSeconds: 20
+      timeoutSeconds: 3
+      failureThreshold: 6
+
+# --- Placement --------------------------------------------------------------
+placement:
+  # node-class label values that pods may run on. Agents are labelled
+  # node-class=pi or node-class=vm by bootstrap/20-install-agent.sh.
+  nodeClasses:
+    - vm
+    - pi
+  # Spread pods across at least this many hosts where possible.
+  topologyKey: kubernetes.io/hostname
+  maxSkew: 1
+  whenUnsatisfiable: ScheduleAnyway
+
+# --- Disruption -------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # For a single-replica StatefulSet set minAvailable=1 (or maxUnavailable via
+  # podDisruptionBudget.maxUnavailable); see values.pi.yaml.
+
+# --- Networking -------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+serviceAccount:
+  create: true
+  name: ""
+
+commonLabels: {}

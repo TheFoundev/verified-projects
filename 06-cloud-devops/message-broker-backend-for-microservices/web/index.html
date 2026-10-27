@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Message Broker Backend · project console</title>
+<meta name="description" content="An Erlang/OTP order-processing backend on RabbitMQ quorum queues: publisher confirms, a consumer with a retry ladder, a Prometheus endpoint and a small HTTP interface.">
+<meta name="theme-color" content="hsl(0 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">MB</span>
+    <span><strong>Message Broker Backend</strong><small>Orders over quorum queues</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">messaging · Erlang</span>
+      <h1>A broken order never blocks the queue.</h1>
+      <p class="lede">An Erlang/OTP order-processing backend on RabbitMQ quorum queues: publisher confirms, a consumer with a retry ladder, a Prometheus endpoint and a small HTTP interface.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is an Erlang/OTP service, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">⇉</div>
+          <h3>Orders over HTTP</h3>
+          <p>POST /orders publishes to the orders exchange with an idempotency key and publisher confirms.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>A four-step pipeline</h3>
+          <p>Validate, reserve inventory, charge and fulfil run in order for every delivery.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">↺</div>
+          <h3>Transient versus terminal</h3>
+          <p>Failures are classified; transient faults climb a retry ladder and terminal ones go to the dead-letter queue.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Supervised connection</h3>
+          <p>The AMQP connection reconnects with backoff and re-declares the topology after a reconnect.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◷</div>
+          <h3>Prometheus metrics</h3>
+          <p>Queue depth, retries and outcomes are exposed for scraping.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>One supervisor per process</h3>
+          <p>The OTP tree keeps the connection, publisher and consumer independently restartable.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">mbb_connection owns the AMQP connection and channel, mbb_topology declares the exchange, queues and bindings idempotently, and mbb_publisher publishes with confirms. mbb_consumer consumes with a prefetch window, classifies each outcome and settles the delivery as ack, retry or dead letter. mbb_order is the pure domain layer: the pipeline, the JSON codec and the idempotency key, with no side effects.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Erlang</span><span class="badge">OTP</span><span class="badge">RabbitMQ</span><span class="badge">Prometheus</span><span class="badge">Docker</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>rebar3 shell</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>rebar3 compile</code></td><td>compile the application</td></tr><tr><td><code>rebar3 ct</code></td><td>run the common test suite</td></tr><tr><td><code>docker compose up</code></td><td>start RabbitMQ and the service</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Message Broker Backend — part of the Foundev portfolio.</span>
+    <span>An Erlang/OTP service.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      rabbitmq:
+        image: rabbitmq:3.13-management-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '29'
+          rebar3-version: '3.24.0'
+
+      - name: Cache the dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            _build
+            ~/.cache/rebar3
+          key: ${{ runner.os }}-otp29-${{ hashFiles('rebar.lock') }}
+          restore-keys: ${{ runner.os }}-otp29-
+
+      - name: Compile
+        run: rebar3 compile
+
+      - name: Run the unit tests
+        run: rebar3 eunit
+
+      - name: Run the structural checker
+        run: python3 tools/check_erl.py
+
+      - name: Dialyzer
+        run: rebar3 dialyzer
+        continue-on-error: true

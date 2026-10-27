@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vaultbox · Vaultbox</title>
+<meta name="description" content="Vaultbox cuts a file into chunks with a rolling hash, skips the chunks that are already in the repository and encrypts every new chunk with AES-GCM. The manifest lists the chunks of every file, so a restore reads the chunks back, opens them and writes them together. The key comes from PBKDF2 over a secret and a salt, so the same secret gives a different key on every machine.">
+<meta name="theme-color" content="hsl(207 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Vb</span>
+    <span><strong>Vaultbox</strong><small>Chunk a file, encrypt every chunk, put it back together</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">infrastructure &amp; cloud</span>
+      <h1>A backup that keeps every piece of a file once.</h1>
+      <p class="lede">Vaultbox cuts a file into chunks with a rolling hash, skips the chunks that are already in the repository and encrypts every new chunk with AES-GCM. The manifest lists the chunks of every file, so a restore reads the chunks back, opens them and writes them together. The key comes from PBKDF2 over a secret and a salt, so the same secret gives a different key on every machine.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Rolling chunking</h3>
+          <p>ContentDefined cuts the file on the boundaries of a rolling hash over the last 64 bytes.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Deduplication</h3>
+          <p>A chunk that is already in the repository is not written again; Put counts the new chunks only.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>AES-GCM</h3>
+          <p>Every chunk is sealed with its own nonce, and the nonce is stored in front of the ciphertext.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚙</div>
+          <h3>PBKDF2</h3>
+          <p>The key is derived with PBKDF2 over HMAC-SHA256, 120000 rounds, with a salt of 16 bytes.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Manifest</h3>
+          <p>The manifest maps every file name to the list of its chunks, and it is written next to them.</p>
+        </article><article class="card reveal">
+          <div class="icon">↻</div>
+          <h3>Restore</h3>
+          <p>Restore reads the chunks of the manifest, opens every one of them and writes the bytes together.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">repository.go holds the repository. ContentDefined cuts the data on the boundaries of a rolling polynomial hash over the last 64 bytes, with the bounds 32, 96 and 192, so a byte that is inserted at the front only moves the boundaries near the front. chunkID is the SHA-256 of the chunk, in hexadecimal. seal and openSealed use crypto/aes with cipher.NewGCM, and the nonce is written in front of the ciphertext. deriveKey calls pbkdf2Key, which is PBKDF2 with HMAC-SHA256, 120000 rounds and a key of 32 bytes. Repository holds the directory, the key, the salt and the manifest; Put writes every new chunk as a file with the id of the chunk and the suffix .enc and counts the new ones, Restore reads the chunks of the manifest and writes them together, and Save writes manifest.json. main.go backs up one file with -source or restores one with -restore.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">crypto/aes and crypto/cipher</span><span class="badge">crypto/sha256</span><span class="badge">PBKDF2 with HMAC-SHA256</span><span class="badge">encoding/json</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of the repository: files, chunks, bytes and duplicates</td></tr><tr><td><code>GET</code></td><td><code>/api/files</code></td><td>The files of the manifest with their number of chunks</td></tr><tr><td><code>GET</code></td><td><code>/api/chunks</code></td><td>The chunks of the manifest with their plain and their stored size</td></tr><tr><td><code>GET</code></td><td><code>/api/drill</code></td><td>The steps of the last backup drill</td></tr><tr><td><code>POST</code></td><td><code>/api/backup</code></td><td>Back up a file of the project and answer with the counters</td></tr><tr><td><code>POST</code></td><td><code>/api/restore</code></td><td>Restore a file of the manifest and answer with the number of bytes</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -source README.md -repo artifacts/repository
+# go run . -restore README.md -repo artifacts/repository
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="files">—</div><div class="label">Files in the manifest</div></div><div class="stat"><div class="value" data-stat="chunks">—</div><div class="label">Chunk files on the disk</div></div><div class="stat"><div class="value" data-stat="chunk_refs">—</div><div class="label">Chunk references</div></div><div class="stat"><div class="value" data-stat="new_chunks">—</div><div class="label">New chunks</div></div><div class="stat"><div class="value" data-stat="duplicates">—</div><div class="label">Chunks reused</div></div><div class="stat"><div class="value" data-stat="plaintext">—</div><div class="label">Plain bytes</div></div><div class="stat"><div class="value" data-stat="stored">—</div><div class="label">Stored bytes</div></div><div class="stat"><div class="value" data-stat="chunk_min">—</div><div class="label">Smallest chunk</div></div><div class="stat"><div class="value" data-stat="chunk_max">—</div><div class="label">Largest chunk</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Vaultbox — part of the Foundev portfolio.</span>
+    <span>Themed for infrastructure &amp; cloud.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

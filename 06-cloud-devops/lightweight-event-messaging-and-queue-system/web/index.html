@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eventwire · Eventwire</title>
+<meta name="description" content="Eventwire keeps its topics in memory. Publishing appends a message with an offset, a key and a timestamp to the topic and trims the topic when it grows past the retention. A consumer polls the topic from its own offset, the polled messages stay pending until they are acknowledged, and the messages of one key always land in the same partition.">
+<meta name="theme-color" content="hsl(331 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Ew</span>
+    <span><strong>Eventwire</strong><small>Topics, offsets, partitions and consumer acknowledgements</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">health &amp; biology</span>
+      <h1>An append-only log per topic, with consumers that acknowledge.</h1>
+      <p class="lede">Eventwire keeps its topics in memory. Publishing appends a message with an offset, a key and a timestamp to the topic and trims the topic when it grows past the retention. A consumer polls the topic from its own offset, the polled messages stay pending until they are acknowledged, and the messages of one key always land in the same partition.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Append-only topics</h3>
+          <p>Publish appends a message with an offset, a key and a timestamp to the topic of the broker.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Offsets</h3>
+          <p>Every topic has its own counter, and Fetch returns the messages at or after an offset.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Four partitions</h3>
+          <p>partitionOf hashes the key, so the messages of one key always land in the same partition.</p>
+        </article><article class="card reveal">
+          <div class="icon">⏱</div>
+          <h3>Retention</h3>
+          <p>When a topic grows past the retention, the oldest messages are trimmed away.</p>
+        </article><article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Acknowledgements</h3>
+          <p>Poll marks the messages pending, Ack clears one offset and Pending counts the ones that are left.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>An HTTP API</h3>
+          <p>PublishHandler and FetchHandler take the topic, the key, the payload, the offset and the limit from the query.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">queue.go holds the broker. Message carries a topic, an offset, a key, a payload and a timestamp; Topic keeps the messages and the offset of the next one behind a sync.RWMutex. Broker holds the topics in a map and the retention. NewBroker takes the retention, broker.topic finds a topic or makes one. Publish appends the message, gives it the offset of the topic and trims the front of the topic when it is longer than the retention. Fetch returns the messages at or after an offset and stops at the limit. partitionOf hashes the bytes of a key into the four partitions of the constant Partitions, so the messages of a key keep their order, and PartitionOf and PartitionsOf expose that to the caller. Consumer holds an offset and the pending offsets: Poll fetches the messages from the offset, marks them pending and moves the offset, Ack drops one pending offset and Pending counts the ones that are left. PublishHandler and FetchHandler read the query parameters topic, key, payload, offset and limit. main.go makes a broker with a retention of 100 and publishes two messages to the topic orders.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">sync.RWMutex</span><span class="badge">net/http</span><span class="badge">strconv</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of the broker: topics, messages, partitions and pending messages</td></tr><tr><td><code>GET</code></td><td><code>/api/messages</code></td><td>Every message of every topic with its offset and its partition</td></tr><tr><td><code>GET</code></td><td><code>/api/topics</code></td><td>The topics with their number of messages and their last offset</td></tr><tr><td><code>GET</code></td><td><code>/api/partitions</code></td><td>The partition of every key of the broker</td></tr><tr><td><code>GET</code></td><td><code>/api/consumers</code></td><td>The consumers with their offset and their pending messages</td></tr><tr><td><code>POST</code></td><td><code>/api/publish</code></td><td>Publish a message on a topic and answer with its offset and its partition</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -listen :8082
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="topics">—</div><div class="label">Topics</div></div><div class="stat"><div class="value" data-stat="messages">—</div><div class="label">Messages</div></div><div class="stat"><div class="value" data-stat="partitions">—</div><div class="label">Partitions per topic</div></div><div class="stat"><div class="value" data-stat="pending">—</div><div class="label">Pending messages</div></div><div class="stat"><div class="value" data-stat="consumers">—</div><div class="label">Consumers</div></div><div class="stat"><div class="value" data-stat="retention">—</div><div class="label">Retention</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Eventwire — part of the Foundev portfolio.</span>
+    <span>Themed for health &amp; biology.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

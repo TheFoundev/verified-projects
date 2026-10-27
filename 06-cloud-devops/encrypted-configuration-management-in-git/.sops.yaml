@@ -1,0 +1,68 @@
+# secretsync configuration (.sops.yaml-style)
+# Encrypt per-environment secrets with age recipients; CI holds the keys.
+version: 1
+
+keys:
+  dev:
+    recipients:
+      - age1nr2wss4zw7l4xnw27rv6wa5r556jszrtgj7x0pmergwwf4cxmpwqynvdcf
+    previous_recipients: []
+    rotation_reminder_days: 90
+    last_rotated: 2026-10-20
+  staging:
+    recipients:
+      - age1n8nj77sasxgtys55gvx4zt5vtrjlp4yem5th3np05a0n30zplavspsjp5n
+    previous_recipients: []
+    rotation_reminder_days: 30
+    last_rotated: 2026-10-20
+  prod:
+    recipients:
+      - age1u5t4wzjk3regsja383krj392cah4927r4atsyvm3enjhw55pkv0qfy7cxp
+    previous_recipients: []
+    rotation_reminder_days: 30
+    last_rotated: 2026-10-20
+
+creation_rules:
+  - env: dev
+    path_regex: '^(environments/dev/|ansible/secrets/dev\.)'
+  - env: staging
+    path_regex: '^(environments/staging/|ansible/secrets/staging\.)'
+  - env: prod
+    path_regex: '^(environments/prod/|ansible/secrets/prod\.)'
+
+files:
+  - environments/dev/secrets.enc.yaml
+  - environments/staging/secrets.enc.yaml
+  - environments/prod/secrets.enc.yaml
+  - ansible/secrets/dev.secrets.enc.yaml
+  - ansible/secrets/staging.secrets.enc.yaml
+  - ansible/secrets/prod.secrets.enc.yaml
+
+decrypt_policy:
+  require_ci: true
+  ci_var: CI
+  ci_truthy: "true"
+  marker_var: SECRETSYNC_RUN_ID
+  enforce_local_deny: true
+
+plaintext_patterns:
+  - password
+  - passwd
+  - api_key
+  - apikey
+  - secret_key
+  - client_secret
+  - private_key
+  - access_key
+  - auth_token
+  - token
+  - credentials
+
+scan_exclude:
+  - .tools/**
+  - .secretsync/**
+  - '**/*.enc.*'
+  - '**/*.dec.*'
+
+audit_log: .secretsync/audit.log
+key_dir: .secretsync/local-keys

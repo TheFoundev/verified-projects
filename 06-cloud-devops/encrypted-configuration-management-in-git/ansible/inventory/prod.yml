@@ -1,0 +1,10 @@
+---
+# Inventory: production environment.
+all:
+  children:
+    app:
+      hosts:
+        app-prod.internal:
+          inventory_environment: prod
+          ansible_host: app-prod.internal
+          ansible_user: deploy

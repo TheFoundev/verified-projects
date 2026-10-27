@@ -1,0 +1,17 @@
+[Unit]
+Description=K3s edge node health probe
+Documentation=https://github.com/k3s-io/k3s
+# Run after the runtime is up; do not fail the boot if it is slow.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Probe both the local API socket and the node's Ready condition. If either
+# fails for HEALTH_FAIL_THRESHOLD consecutive runs we restart the runtime.
+Environment=HEALTH_FAIL_THRESHOLD=3
+Environment=HEALTH_STATE_FILE=/run/k3s-healthcheck.fails
+ExecStart=/usr/local/bin/k3s-healthcheck.sh
+# Allow a little slack; the probe talks to a local socket.
+TimeoutStartSec=60s
+Nice=10

@@ -1,0 +1,59 @@
+# manifests/networkpolicy.example.yaml
+#
+# A standalone NetworkPolicy example you can apply without Helm.
+#
+# CAVEAT: K3s installs flannel as its default CNI, and flannel does not
+# enforce NetworkPolicy. On a stock K3s cluster this object is accepted and
+# stored but has no effect. To make it real, install a policy-capable CNI
+# (for example Calico) or enable K3s's network-policy controller. The example
+# is here so the intent is documented and the object is ready when a
+# enforcing CNI is present.
+#
+#   kubectl apply -f manifests/networkpolicy.example.yaml
+#
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: edge-demo-default-deny
+  namespace: edge-demo
+  labels:
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+spec:
+  # Applies to every pod in the namespace.
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: edge-demo-allow-hello-and-dns
+  namespace: edge-demo
+  labels:
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: hello-edge
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow HTTP from anywhere inside the cluster.
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    # Allow DNS lookups to kube-system (CoreDNS).
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

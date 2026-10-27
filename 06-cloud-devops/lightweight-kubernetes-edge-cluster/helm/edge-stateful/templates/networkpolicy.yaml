@@ -1,0 +1,66 @@
+{{- if .Values.networkPolicy.enabled }}
+{{/*
+NetworkPolicy: default-deny ingress for the release's pods, then allow the
+specific flows the workload needs:
+
+  - Postgres accepts traffic on 5432 from pods in the same release only.
+  - Cache accepts traffic on 6379 from pods in the same release only.
+  - DNS egress to kube-system is always allowed.
+
+This is a core-Kubernetes example (no CNI-specific CRDs). It requires a CNI
+that enforces NetworkPolicy; K3s ships flannel which does NOT enforce policy
+by default. See manifests/networkpolicy.example.yaml for the caveat.
+*/}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-default-deny
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-allow-intra-release
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
+  egress:
+    # Intra-release traffic.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+              app.kubernetes.io/instance: {{ .Release.Name }}
+    # DNS.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+{{- end }}

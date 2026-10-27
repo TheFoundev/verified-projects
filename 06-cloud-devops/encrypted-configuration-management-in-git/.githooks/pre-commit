@@ -1,0 +1,7 @@
+#!/bin/sh
+# secretsync pre-commit gate: rejects plaintext secrets, unencrypted
+# config files, tracked decrypted copies / key material, and a tampered
+# or truncated audit trail.
+#
+# Enable with:  git config core.hooksPath .githooks
+exec python3 -m secretsync check

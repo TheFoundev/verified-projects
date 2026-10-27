@@ -1,0 +1,14 @@
+[Unit]
+Description=Snapshot the K3s embedded etcd datastore every 6 hours
+Documentation=https://docs.k3s.io/datastore/backup-restore
+Requires=k3s-backup.service
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=6h
+AccuracySec=1min
+Persistent=true
+Unit=k3s-backup.service
+
+[Install]
+WantedBy=timers.target

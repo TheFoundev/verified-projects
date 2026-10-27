@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secretsync · Secretsync</title>
+<meta name="description" content="secretsync keeps the secrets of every environment encrypted inside a Git repository: each environment has its own age recipients, decryption is only allowed inside CI, key rotation keeps the old recipients readable for a while, and every operation lands in a hash-chained audit trail.">
+<meta name="theme-color" content="hsl(346 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">SS</span>
+    <span><strong>Secretsync</strong><small>Secrets in Git, encrypted per environment</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a><a href="login.html" class="">Sign in</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">security &amp; defence</span>
+      <h1>Commit the ciphertext, never the password.</h1>
+      <p class="lede">secretsync keeps the secrets of every environment encrypted inside a Git repository: each environment has its own age recipients, decryption is only allowed inside CI, key rotation keeps the old recipients readable for a while, and every operation lands in a hash-chained audit trail.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+        <a class='btn ghost' href='login.html'>Sign in</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">◆</div>
+          <h3>One key set per environment</h3>
+          <p>Each environment is encrypted to its own age recipients, so a staging key never opens production.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Decryption only in CI</h3>
+          <p>The decrypt is refused on a laptop and only proceeds when the CI variable and the run marker are there.</p>
+        </article><article class="card reveal">
+          <div class="icon">⟳</div>
+          <h3>Rotation with a grace period</h3>
+          <p>The old recipients keep reading until the grace period ends, and the reminder days are tracked per environment.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛓</div>
+          <h3>A trail that cannot be edited quietly</h3>
+          <p>Every record hashes the previous one, so a rewritten or truncated trail is detected.</p>
+        </article><article class="card reveal">
+          <div class="icon">✔</div>
+          <h3>A gate in front of every commit</h3>
+          <p>The pre-commit hook rejects plaintext secrets, unencrypted files and a broken chain.</p>
+        </article><article class="card reveal">
+          <div class="icon">⊘</div>
+          <h3>Plaintext never lands in a commit</h3>
+          <p>Encryption is refused while another tracked file still carries a secret in cleartext.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The configuration file .sops.yaml maps every environment to its own age recipients, its own creation rules and its own rotation reminder. Encrypting re-keys a file to the recipients of its environment through sops, while decrypting is only allowed when the policy sees the CI variable and the run marker. Every operation is appended to a JSONL trail in which each record hashes the previous one, and a side-car checkpoint catches a truncated tail. The pre-commit gate runs the same checks over the working tree before anything is committed.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Python</span><span class="badge">Standard library only</span><span class="badge">sops</span><span class="badge">age</span><span class="badge">Git hooks</span><span class="badge">Ansible (optional)</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The environments, the encrypted files, the records of the trail and the state of the chain</td></tr><tr><td><code>GET</code></td><td><code>/api/audit</code></td><td>Every record of the hash-chained audit trail</td></tr><tr><td><code>GET</code></td><td><code>/api/environments</code></td><td>The recipients, the grace recipients and the rotation date of every environment</td></tr><tr><td><code>POST</code></td><td><code>/api/check</code></td><td>Run the pre-commit gate and answer with its errors and its warnings</td></tr><tr><td><code>POST</code></td><td><code>/api/verify</code></td><td>Verify the chain of the trail and the hashes of the ciphertexts</td></tr><tr><td><code>POST</code></td><td><code>/api/decrypt</code></td><td>Ask the decrypt policy for a decision, exactly as the CLI does before it decrypts</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># bash scripts/fetch_tools.sh                 # the sops and age binaries into .tools/
+# python3 -m secretsync init --envs dev,staging,prod
+# python3 -m secretsync check                 # the pre-commit gate
+# python3 -m secretsync audit verify --check-files
+# python3 web/server.py --port 8200           # this site
+# pytest -q                                   # 96 tests</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div>
+            <div class="stat"><div class="value" data-stat="environments">—</div><div class="label">Environments</div></div><div class="stat"><div class="value" data-stat="encrypted_files">—</div><div class="label">Encrypted files</div></div><div class="stat"><div class="value" data-stat="audit_records">—</div><div class="label">Audit records</div></div><div class="stat"><div class="value" data-stat="chain">—</div><div class="label">Chain</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Secretsync — part of the Foundev portfolio.</span>
+    <span>Themed for security &amp; defence.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

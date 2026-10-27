@@ -1,0 +1,19 @@
+# Prometheus scrape configuration for the message-broker-backend stack.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # RabbitMQ's built-in Prometheus endpoint (rabbitmq_prometheus plugin)
+  # exposes broker metrics: queue depths, consumer counts, node memory.
+  - job_name: rabbitmq
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["rabbitmq:15692"]
+
+  # The order backend's mbb_metrics registry: pipeline totals, retries,
+  # DLQ counts, publish confirms, and connection-blocked state.
+  - job_name: order-backend
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["order-backend:8080"]

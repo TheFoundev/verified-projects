@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Streaming Dashboard</title>
+  <style>
+    :root { --bg:#1a1a1a; --fg:#f0f0f0; --card:#2a2a2a; --accent:#4a9eff; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:20px; background:var(--bg); color:var(--fg); font-family:system-ui, -apple-system, sans-serif; }
+    h1 { margin:0 0 20px; color:var(--accent); }
+    .container { max-width:1200px; margin:0 auto; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:20px; }
+    .card { background:var(--card); padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
+    h2 { margin:0 0 15px; font-size:1.2rem; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid #444; text-align:left; }
+    th { font-weight:600; color:var(--accent); }
+    .refresh { margin-bottom:20px; }
+    button { background:var(--accent); color:#fff; border:none; padding:10px 20px; border-radius:4px; cursor:pointer; }
+    button:hover { opacity:0.9; }
+    .status { padding:10px; margin-bottom:20px; border-radius:4px; background:#2d5a3d; }
+    @media (max-width:600px) { body{padding:10px;} .grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Event Streaming Platform - Dashboard</h1>
+    <div class="refresh">
+      <button onclick="fetchData()">Refresh</button>
+      <span id="lastUpdate"></span>
+    </div>
+    <div id="status" class="status">Connecting...</div>
+    <div class="grid">
+      <div class="card">
+        <h2>Page Statistics (1-min window)</h2>
+        <table id="pagesTable">
+          <thead><tr><th>URL</th><th>Hits</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Top Referrers</h2>
+        <table id="referrersTable">
+          <thead><tr><th>Referrer</th><th>Count</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function fetchData() {
+      try {
+        const statusEl = document.getElementById('status');
+        const pagesResp = await fetch('/stats/pages').catch(()=>null);
+        const refsResp = await fetch('/stats/top-referrers').catch(()=>null);
+        const healthResp = await fetch('/health').catch(()=>null);
+        if (healthResp && healthResp.ok) {
+          statusEl.textContent = 'Connected to ViewServer';
+          statusEl.style.background = '#2d5a3d';
+        } else {
+          statusEl.textContent = 'ViewServer unavailable';
+          statusEl.style.background = '#5a2d2d';
+        }
+        if (pagesResp && pagesResp.ok) {
+          const data = await pagesResp.json();
+          const tbody = document.querySelector('#pagesTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${escapeHtml(p.url||'')}</td><td>${p.hits||0}</td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        if (refsResp && refsResp.ok) {
+          const data = await refsResp.json();
+          const tbody = document.querySelector('#referrersTable tbody');
+          tbody.innerHTML = '';
+          data.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${escapeHtml(r.referrer||'direct')}</td><td>${r.count||0}</td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('lastUpdate').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    fetchData();
+    setInterval(fetchData, 5000);
+  </script>
+</body>
+</html>

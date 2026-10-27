@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spanline · Spanline</title>
+<meta name="description" content="Spanline keeps the spans of instrumented services in memory and groups them by trace id. A trace gets its total duration from the earliest start and the latest end of its spans, and the span without a parent is the root of the tree. For every service the store counts the spans and computes the p50 and the p95 of their duration in milliseconds. Spans arrive as JSON, also in the shape of the OpenTelemetry protocol.">
+<meta name="theme-color" content="hsl(15 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Sl</span>
+    <span><strong>Spanline</strong><small>Spans in, traces and latency percentiles out</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">commerce &amp; retail</span>
+      <h1>Every span of a request, assembled into a trace.</h1>
+      <p class="lede">Spanline keeps the spans of instrumented services in memory and groups them by trace id. A trace gets its total duration from the earliest start and the latest end of its spans, and the span without a parent is the root of the tree. For every service the store counts the spans and computes the p50 and the p95 of their duration in milliseconds. Spans arrive as JSON, also in the shape of the OpenTelemetry protocol.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Spans with parents</h3>
+          <p>A Span holds its trace id, its span id and the id of its parent, so the tree of a trace can be rebuilt.</p>
+        </article><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Trace assembly</h3>
+          <p>Store.Traces groups the spans by trace id and computes the duration from the earliest start and the latest end.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Percentiles</h3>
+          <p>Percentile sorts the durations of a service and takes the index int(p/100*(n-1)).</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Per-service latency</h3>
+          <p>Store.Stats counts the spans of every service and gives their p50, their p95 and their errors.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Two ways in</h3>
+          <p>IngestHandler takes a JSON array of spans and OTLPHandler takes the resourceSpans and scopeSpans of the protocol.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Trace lookup</h3>
+          <p>TraceHandler answers one trace by its id and answers 404 when there is none.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">tracing.go holds the model and the store. Span carries a trace id, a span id, a parent id, a service, an operation, a start, a duration and a status; Store keeps the spans in a slice behind a sync.RWMutex and Add appends to it. Traces groups the spans by trace id, takes the earliest start and the latest end for the duration, counts the spans with the status error and names the span without a parent as the root. Percentile sorts a slice of milliseconds and takes the index int(p/100*(n-1)). Stats groups the spans by service and fills a ServiceStats with the number of spans, the p50, the p95 and the number of errors. IngestHandler reads a JSON array of spans, OTLPHandler walks resourceSpans, scopeSpans and spans of the protocol, StatsHandler answers the latency and TraceHandler answers one trace of a /traces/{id} path. main.go fills the store with the four sample spans and serves the handlers on the address of the -listen flag.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">encoding/json</span><span class="badge">net/http</span><span class="badge">sync.RWMutex</span><span class="badge">time.Time</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters, the spans and the latency of every service</td></tr><tr><td><code>GET</code></td><td><code>/api/stats</code></td><td>The latency of every service: spans, p50, p95 and errors</td></tr><tr><td><code>GET</code></td><td><code>/api/traces</code></td><td>The traces with their duration, their errors and their root span</td></tr><tr><td><code>GET</code></td><td><code>/api/spans</code></td><td>Every span of the store</td></tr><tr><td><code>GET</code></td><td><code>/api/percentiles</code></td><td>The percentiles over the durations of all the spans</td></tr><tr><td><code>POST</code></td><td><code>/api/ingest</code></td><td>Store one span or a list of spans and answer with the counters</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -listen :8081
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="spans">—</div><div class="label">Spans</div></div><div class="stat"><div class="value" data-stat="traces">—</div><div class="label">Traces</div></div><div class="stat"><div class="value" data-stat="services">—</div><div class="label">Services</div></div><div class="stat"><div class="value" data-stat="errors">—</div><div class="label">Error spans</div></div><div class="stat"><div class="value" data-stat="p50">—</div><div class="label">p50 of the spans (ms)</div></div><div class="stat"><div class="value" data-stat="p95">—</div><div class="label">p95 of the spans (ms)</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Spanline — part of the Foundev portfolio.</span>
+    <span>Themed for commerce &amp; retail.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

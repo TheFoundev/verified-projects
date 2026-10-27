@@ -1,0 +1,82 @@
+---
+# secretsync + Ansible: demonstrate decrypt-in-CI.
+#
+# Mirrors the community.sops lookup pattern, but the actual decryption is
+# a task that shells out to the secretsync CLI so the CI gate and the
+# audit trail apply uniformly.  Decrypted material only ever exists in
+# the runner temp dir and is shredded in an `always:` block.
+#
+#   ansible-playbook -i ansible/inventory/dev.yml ansible/playbook.yml
+#
+# Requires CI=true + SECRETSYNC_RUN_ID in the environment (both set by
+# .github/workflows-example/ci.yml), otherwise the pre-task refuses.
+
+- name: Deploy the application with environment secrets
+  hosts: all
+  gather_facts: false
+  vars:
+    secrets_file: "{{ playbook_dir }}/secrets/{{ inventory_environment }}.secrets.enc.yaml"
+    decrypted_tmp: "{{ lookup('env', 'RUNNER_TEMP') | default('/tmp', true) }}/secretsync-{{ inventory_environment }}.dec.yaml"
+    python_bin: "{{ lookup('env', 'SECRETSYNC_PYTHON') | default('python3', true) }}"
+
+  pre_tasks:
+    - name: Refuse to run outside CI (mirrors decrypt_policy)
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'CI') | string | lower == 'true'
+          - lookup('env', 'SECRETSYNC_RUN_ID') | default('') | length > 0
+        fail_msg: >-
+          Secrets are CI-gated: set CI=true and SECRETSYNC_RUN_ID exactly as the
+          decrypt policy expects (see .sops.yaml). On a laptop where
+          decrypt_policy.enforce_local_deny is false you can decrypt manually with
+          `python3 -m secretsync decrypt <file> --env <env> --allow-local`.
+
+  tasks:
+    - name: Decrypt, consume and always shred the plaintext
+      block:
+        - name: Decrypt environment secrets through the secretsync CLI
+          ansible.builtin.command:
+            argv:
+              - "{{ python_bin }}"
+              - -m
+              - secretsync
+              - decrypt
+              - "{{ secrets_file }}"
+              - --env
+              - "{{ inventory_environment }}"
+              - --output
+              - "{{ decrypted_tmp }}"
+          environment:
+            CI: "{{ lookup('env', 'CI') }}"
+            SECRETSYNC_RUN_ID: "{{ lookup('env', 'SECRETSYNC_RUN_ID') }}"
+            SOPS_AGE_KEY_FILE: "{{ lookup('env', 'SOPS_AGE_KEY_FILE') }}"
+          register: secretsync_decrypt
+          changed_when: true
+
+        - name: Load decrypted vars (community.sops-style access)
+          ansible.builtin.include_vars:
+            file: "{{ decrypted_tmp }}"
+            name: app_env_vars
+
+        - name: Use the decrypted values downstream
+          ansible.builtin.debug:
+            msg: >-
+              deploying to {{ inventory_environment }} with
+              db host {{ app_env_vars.db_host }}:{{ app_env_vars.db_port }}
+              (credential length: {{ app_env_vars.db_password | length }})
+      always:
+        - name: Remove the decrypted file from disk
+          ansible.builtin.file:
+            path: "{{ decrypted_tmp }}"
+            state: absent
+
+- name: "Alternative: the secretsync lookup plugin"
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: community.sops-style lookup backed by the CLI
+      ansible.builtin.debug:
+        msg: >-
+          db host is {{ lookup('secretsync',
+          playbook_dir ~ '/secrets/' ~ inventory_environment ~ '.secrets.enc.yaml',
+          env=inventory_environment) | from_yaml }}

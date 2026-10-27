@@ -1,0 +1,98 @@
+# manifests/hello-edge/deployment.yaml
+#
+# A tiny, arm64-friendly sample workload used by bootstrap/40-verify-cluster.sh
+# and the Makefile `smoke` target to demonstrate a rollout and rollback.
+#
+# The image is multi-arch, so the same manifest works on x86_64 VMs and
+# Raspberry Pi agents.
+#
+# Rollout / rollback demo:
+#   kubectl apply -f manifests/hello-edge/
+#   kubectl rollout status deployment/hello-edge -n edge-demo
+#   kubectl set image deployment/hello-edge -n edge-demo app=nginx:1.27-alpine
+#   kubectl rollout status  deployment/hello-edge -n edge-demo
+#   kubectl rollout undo    deployment/hello-edge -n edge-demo
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edge-demo
+  labels:
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-edge
+  namespace: edge-demo
+  labels:
+    app.kubernetes.io/name: hello-edge
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello-edge
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hello-edge
+    spec:
+      # Spread the two replicas across nodes where there is room. Uses
+      # ScheduleAnyway so a single-node cluster still deploys.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: hello-edge
+      containers:
+        - name: app
+          image: nginx:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 96Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-edge
+  namespace: edge-demo
+  labels:
+    app.kubernetes.io/name: hello-edge
+    app.kubernetes.io/part-of: lightweight-kubernetes-edge-cluster
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: hello-edge
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

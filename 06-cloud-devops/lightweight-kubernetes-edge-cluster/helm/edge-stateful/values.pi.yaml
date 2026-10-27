@@ -1,0 +1,60 @@
+# helm/edge-stateful/values.pi.yaml
+#
+# Overrides for Raspberry Pi agents (arm64, low memory). Use with:
+#   helm upgrade --install edge-stateful ./helm/edge-stateful \
+#     -f helm/edge-stateful/values.pi.yaml
+#
+# The images below are multi-arch and publish arm64 variants, so no special
+# image tags are needed for Pi. The changes are almost entirely about memory,
+# storage size and scheduling.
+
+postgres:
+  replicas: 1
+  storage:
+    className: local-path
+    size: 2Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 192Mi
+    limits:
+      cpu: 400m
+      memory: 384Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 20
+      failureThreshold: 8
+    liveness:
+      initialDelaySeconds: 45
+      failureThreshold: 8
+
+cache:
+  replicas: 1
+  storage:
+    className: local-path
+    size: 512Mi
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 200m
+      memory: 96Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+    liveness:
+      initialDelaySeconds: 25
+
+placement:
+  # On a Pi-only edge fleet, allow scheduling on pi nodes explicitly.
+  nodeClasses:
+    - pi
+  topologyKey: kubernetes.io/hostname
+  maxSkew: 1
+  whenUnsatisfiable: ScheduleAnyway
+
+# Single node of capacity: keep a pod available through voluntary disruption.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

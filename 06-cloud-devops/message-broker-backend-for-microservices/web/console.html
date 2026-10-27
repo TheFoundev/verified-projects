@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Message Broker Backend</title>
+<meta name="description" content="An Erlang/OTP order-processing backend on RabbitMQ quorum queues: publisher confirms, a consumer with a retry ladder, a Prometheus endpoint and a small HTTP interface.">
+<meta name="theme-color" content="hsl(0 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">MB</span>
+    <span><strong>Message Broker Backend</strong><small>Orders over quorum queues</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Message Broker Backend</h1>
+        <p class="lede" style="margin-top:8px">Real repository counts, the real size of every language, and the real output of the project's own command.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+      </div>
+    </div>
+    <div class="stats reveal"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+        <div class="panel-head"><h3>Lines by language</h3><span class="badge" data-panel-status>live</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">Every source file in this repository, grouped by extension and counted at request time.</p>
+          <svg class="chart" viewBox="0 0 640 168" role="img" aria-label="Lines of code by language"></svg>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head"><h3 data-demo-label>Run the demo</h3><span class="badge" data-panel-status>subprocess</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">This runs the project's own command from the repository root. If the toolchain or its dependencies are not installed on this machine, the output says so — it is never replaced with a pretend result.</p>
+          <pre style="margin:14px 0 12px"><code data-demo-command>$ rebar3 ct</code></pre>
+          <button class="btn primary" data-run>Run it</button>
+          <pre style="margin-top:14px;max-height:340px;overflow:auto"><code data-demo-output>Press "Run it" to execute the command above.</code></pre>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head"><h3>The largest files</h3><span class="badge" data-panel-status>live</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">The twelve largest source files, with the language and line count the counter measured.</p>
+          <div class="panel" style="margin-top:14px;box-shadow:none">
+            <table>
+              <thead><tr><th>File</th><th>Language</th><th>Lines</th></tr></thead>
+              <tbody data-list="largest" data-columns="3"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel reveal">
+        <div class="panel-head"><h3>The commands</h3><span class="badge" data-panel-status>reference</span></div>
+        <div class="panel-body">
+          <p class="lede" style="font-size:.92rem">The project's own entry points, copied from its README.</p>
+          <div class="panel" style="margin-top:14px;box-shadow:none">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody data-list="commands" data-columns="2"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Message Broker Backend · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

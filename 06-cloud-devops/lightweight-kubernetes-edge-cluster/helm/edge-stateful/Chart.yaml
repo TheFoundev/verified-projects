@@ -1,0 +1,19 @@
+apiVersion: v2
+name: edge-stateful
+description: A stateful edge workload (Postgres+cache) pinned to local-path storage with disruption budgets and topology spread.
+type: application
+version: 0.1.0
+appVersion: "16.4"
+keywords:
+  - edge
+  - k3s
+  - statefulset
+  - local-path
+home: https://github.com/k3s-io/k3s
+sources:
+  - https://github.com/k3s-io/k3s
+maintainers:
+  - name: Foundev
+    email: foundev@foundev.local
+annotations:
+  category: Database

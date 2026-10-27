@@ -1,0 +1,14 @@
+{
+  "name": "secrets-management-platform-with-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build a self-hosted secrets platform with project environments, role-based access, end-to-end encryption and integrations that sync secrets into apps and CI pipelines.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

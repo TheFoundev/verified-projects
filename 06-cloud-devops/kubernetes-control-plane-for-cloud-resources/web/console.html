@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Cloudplane</title>
+<meta name="description" content="Cloudplane holds a store of cloud resources, a desired state and a schema for every kind it knows. Plan diffs the store against the desired state and returns create, update and delete actions. Reconcile applies them, writes the desired spec of the resource and reports the ones that could not be written. The generation goes up every time the desired state changes.">
+<meta name="theme-color" content="hsl(189 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Cp</span>
+    <span><strong>Cloudplane</strong><small>A control plane that reconciles cloud resources</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Cloudplane</h1>
+        <p class="lede" style="margin-top:8px">The resources of the store, the desired state, the plan of the difference and the actions that were applied.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+      </div>
+    </div>
+    <div class="stats reveal"><div class="stat"><div class="value" data-stat="resources">—</div><div class="label">Resources in the store</div></div><div class="stat"><div class="value" data-stat="desired">—</div><div class="label">Desired resources</div></div><div class="stat"><div class="value" data-stat="generation">—</div><div class="label">Generation</div></div><div class="stat"><div class="value" data-stat="applied">—</div><div class="label">Applied actions</div></div><div class="stat"><div class="value" data-stat="pending">—</div><div class="label">Planned actions</div></div><div class="stat"><div class="value" data-stat="kinds">—</div><div class="label">Kinds</div></div><div class="stat"><div class="value" data-stat="schemas">—</div><div class="label">Schemas</div></div></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+  <div class="panel-head"><h3>The resources</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The resources of the store, with the status and the first condition of each one.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Kind</th><th>Name</th><th>Status</th><th>Version</th><th>Condition</th></tr></thead>
+    <tbody data-list="resources"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The desired state</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The state the controller wants: the resources that were set with SetDesired.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Kind</th><th>Name</th><th>Spec</th></tr></thead>
+    <tbody data-list="desired"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The plan</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The actions that Plan returns for the difference between the store and the desired state.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Kind</th><th>Name</th><th>Operation</th></tr></thead>
+    <tbody data-list="plan"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The applied actions</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The actions of the last reconciliation that were written to the store.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Kind</th><th>Name</th><th>Operation</th></tr></thead>
+    <tbody data-list="applied"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The schemas</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The schemas of the kinds the control plane knows, with the required fields and the allowed values.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Kind</th><th>Required</th><th>Allowed values</th></tr></thead>
+    <tbody data-list="schemas"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Set the desired state</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The resources are validated against the schemas and the generation goes up.</p>
+<form data-action style="margin-top:14px">
+<div class="field"><label for="resources">The resources, as a JSON list</label><textarea id="resources" name="resources" rows="8">[
+  {"kind": "Bucket", "name": "assets", "spec": {"region": "eu-central-1", "versioning": true}},
+  {"kind": "Database", "name": "orders", "spec": {"size": "medium", "multi_az": true}}
+]</textarea></div>
+  <button class="btn primary" type="submit">Set the desired state</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/desired", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Reconcile</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The plan is applied to the store: the actions that cannot be written are reported and the others still go through.</p>
+<form data-action style="margin-top:14px">
+<p class="hint">The reconciliation needs no field: it uses the desired state that is already set.</p>
+  <button class="btn primary" type="submit">Run the reconciliation</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/reconcile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The API of the project</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The control plane serves its own API when it is started with <code>go run . -serve -port 8080</code>.</p><div class="actions" style="margin-top:14px"><a class="btn" href="healthz">/healthz</a></div></div>
+</section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Cloudplane · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("[data-refresh]").forEach(function (button) {
+    button.addEventListener("click", function () { location.reload(); });
+  });
+});
+</script>
+</body>
+</html>

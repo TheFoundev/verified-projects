@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wallet dapp demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    fieldset { border: 1px solid #ccc; margin-bottom: 1rem; }
+    input { width: 100%; box-sizing: border-box; font-family: monospace; }
+    #receipt { white-space: pre-wrap; font-family: monospace; border: 1px solid #ccc; padding: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Wallet dapp demo</h1>
+  <p>Uses window.ethereum directly, no libraries.</p>
+  <fieldset>
+    <legend>Wallet</legend>
+    <button id="connect">Connect</button>
+    <p>Account: <span id="account">none</span></p>
+    <p>Chain: <span id="chain">unknown</span></p>
+  </fieldset>
+  <fieldset>
+    <legend>ERC-20 transfer</legend>
+    <label>Token <input id="token" value="0x0000000000000000000000000000000000000001"></label>
+    <label>To <input id="to" value="0x0000000000000000000000000000000000000002"></label>
+    <label>Amount (tokens) <input id="amount" value="1.5"></label>
+    <button id="transfer" disabled>Send transfer</button>
+  </fieldset>
+  <fieldset>
+    <legend>Encoded call data</legend>
+    <div id="receipt">not sent yet</div>
+  </fieldset>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloudplane · Cloudplane</title>
+<meta name="description" content="Cloudplane holds a store of cloud resources, a desired state and a schema for every kind it knows. Plan diffs the store against the desired state and returns create, update and delete actions. Reconcile applies them, writes the desired spec of the resource and reports the ones that could not be written. The generation goes up every time the desired state changes.">
+<meta name="theme-color" content="hsl(189 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Cp</span>
+    <span><strong>Cloudplane</strong><small>A control plane that reconciles cloud resources</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">machine vision</span>
+      <h1>Say what should exist; the controller makes it so.</h1>
+      <p class="lede">Cloudplane holds a store of cloud resources, a desired state and a schema for every kind it knows. Plan diffs the store against the desired state and returns create, update and delete actions. Reconcile applies them, writes the desired spec of the resource and reports the ones that could not be written. The generation goes up every time the desired state changes.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Resources</h3>
+          <p>A resource has a kind, a name, a spec, a status, a resource version and conditions.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Plan</h3>
+          <p>Plan diffs the store against the desired state and returns create, update and delete actions.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Schemas</h3>
+          <p>Validate refuses a resource without a name, without a required field or with a value that is not allowed.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Generation</h3>
+          <p>SetDesired validates the new state and raises the generation of the controller.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>Concurrent writes</h3>
+          <p>Store.Update only writes when the resource version of the caller is still the one in the store.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>An HTTP API</h3>
+          <p>Server serves the resources, the desired state, the plan and the reconciliation, plus /healthz.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">control.go holds the model and the controller. Resource carries an api version, a kind, a name, a spec, a status, a resource version, the conditions and the observed generation. Store keeps the resources in a map under the key kind/name, with a counter that gives every write a new resource version; Update only writes when the version of the caller is still the one in the store, so a concurrent write is refused. SchemaRegistry holds a Schema per kind with the required fields and the allowed values, and Validate refuses a resource without a name, without a required field or with a value that is not allowed; a kind without a schema is accepted. Plan diffs the current and the desired resources into create, update and delete actions and sorts them. ReconcileWithSchemas applies the plan and collects the failures. Controller keeps the desired state, SetDesired validates it and raises the generation, and Reconcile plans and applies in one step. Server serves /api/resources, /api/desired, /api/plan, /api/reconcile and /healthz, and FileStore keeps the resources in a JSON file. main.go registers the schemas of the Bucket and the Database and runs the demo with -demo or the API with -serve.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">net/http</span><span class="badge">encoding/json</span><span class="badge">sync.RWMutex</span><span class="badge">os/signal</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters: resources, desired state, generation, plan and schemas</td></tr><tr><td><code>GET</code></td><td><code>/api/resources</code></td><td>The resources of the store with their status and their condition</td></tr><tr><td><code>GET</code></td><td><code>/api/plan</code></td><td>The actions that bring the store in line with the desired state</td></tr><tr><td><code>GET</code></td><td><code>/api/schemas</code></td><td>The schemas of the kinds the control plane knows</td></tr><tr><td><code>POST</code></td><td><code>/api/desired</code></td><td>Set the desired state and answer with the new generation</td></tr><tr><td><code>POST</code></td><td><code>/api/reconcile</code></td><td>Apply the plan to the store and answer with the applied actions</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -demo
+# go run . -serve -port 8080
+# go run . -serve -port 8080 -state state.json -interval 30s
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="resources">—</div><div class="label">Resources in the store</div></div><div class="stat"><div class="value" data-stat="desired">—</div><div class="label">Desired resources</div></div><div class="stat"><div class="value" data-stat="generation">—</div><div class="label">Generation</div></div><div class="stat"><div class="value" data-stat="applied">—</div><div class="label">Applied actions</div></div><div class="stat"><div class="value" data-stat="pending">—</div><div class="label">Planned actions</div></div><div class="stat"><div class="value" data-stat="kinds">—</div><div class="label">Kinds</div></div><div class="stat"><div class="value" data-stat="schemas">—</div><div class="label">Schemas</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Cloudplane — part of the Foundev portfolio.</span>
+    <span>Themed for machine vision.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console · Secretsync</title>
+<meta name="description" content="secretsync keeps the secrets of every environment encrypted inside a Git repository: each environment has its own age recipients, decryption is only allowed inside CI, key rotation keeps the old recipients readable for a while, and every operation lands in a hash-chained audit trail.">
+<meta name="theme-color" content="hsl(346 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">SS</span>
+    <span><strong>Secretsync</strong><small>Secrets in Git, encrypted per environment</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="">Overview</a><a href="console.html" class="active">Console</a><a href="login.html" class="">Sign in</a></nav>
+</header>
+
+<main id="main" class="wrap">
+  <section>
+    <div class="head">
+      <div>
+        <span class="eyebrow">Console</span>
+        <h1 style="margin-top:10px;font-size:clamp(1.7rem,3.4vw,2.4rem)">Secretsync</h1>
+        <p class="lede" style="margin-top:8px">The environments of the configuration, the records of the audit trail, the verdict of the pre-commit gate and the decision the decrypt policy takes on this machine.</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn small" data-refresh>Refresh</button>
+        <button class='btn small ghost' data-logout>Sign out</button>
+      </div>
+    </div>
+    <div class="stats reveal"><div class="stat"><div class="value" data-stat="environments">—</div><div class="label">Environments</div></div><div class="stat"><div class="value" data-stat="encrypted_files">—</div><div class="label">Encrypted files</div></div><div class="stat"><div class="value" data-stat="audit_records">—</div><div class="label">Audit records</div></div><div class="stat"><div class="value" data-stat="chain">—</div><div class="label">Chain</div></div></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="grid cols-2">
+      <section class="panel reveal">
+  <div class="panel-head"><h3>The audit trail</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">Every operation that was recorded, with the actor that performed it and the hash of the previous record.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Seq</th><th>Event</th><th>File</th><th>Env</th><th>Actor</th><th>Time</th></tr></thead>
+    <tbody data-list="audit"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>The environments</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The recipients of every environment, the grace recipients that are still allowed to read and the day of the last rotation.</p>
+<div class="panel" style="margin-top:14px;box-shadow:none">
+  <table>
+    <thead><tr><th>Environment</th><th>Recipients</th><th>Previous</th><th>Last rotated</th><th>Reminder days</th></tr></thead>
+    <tbody data-list="environments"></tbody>
+  </table>
+</div></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Run the pre-commit gate</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The same checks the pre-commit hook runs: the configuration, the coverage of the ciphertexts, the hygiene of the tracked files and the chain of the trail.</p>
+<form data-action style="margin-top:14px">
+  
+  <button class="btn primary" type="submit">Run the gate</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Verify the audit chain</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">Recompute the hash of every record and compare the ciphertexts with the hashes that were written down when they were encrypted.</p>
+<form data-action style="margin-top:14px">
+  
+  <button class="btn primary" type="submit">Verify the chain</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section><section class="panel reveal">
+  <div class="panel-head"><h3>Ask the decrypt policy</h3><span class="badge" data-panel-status>idle</span></div>
+  <div class="panel-body"><p class="lede" style="font-size:.92rem">The decision the policy takes on this machine: outside CI the decryption is refused, and the refusal is itself an audited event.</p>
+<form data-action style="margin-top:14px">
+  
+  <button class="btn primary" type="submit">Ask the policy</button>
+</form>
+<div class="hint" style="margin-top:12px" data-action-result>The answer of the API will show up here.</div>
+<script>
+  document.querySelectorAll("[data-action]").forEach(function (form) {
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const result = form.querySelector("[data-action-result]");
+      const button = form.querySelector("button");
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      result.textContent = "working...";
+      try {
+        const response = await fetch("/api/decrypt", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const answer = await response.json();
+        if (!response.ok) throw new Error(answer.error || "the API refused the request");
+        result.textContent = Object.entries(answer)
+          .filter((entry) => typeof entry[1] !== "object")
+          .map((entry) => entry[0] + ": " + entry[1])
+          .join("  ·  ") || "done";
+        if (typeof load === "function") load();
+      } catch (error) {
+        result.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script></div>
+</section>
+      <section class="panel reveal" data-when-signed-out>
+  <div class="panel-head"><h3>Sign in</h3><span class="badge">secured</span></div>
+  <div class="panel-body">
+    <form data-login>
+      <div class="field"><label for="u">User</label><input id="u" name="username" value="demo" autocomplete="username"></div>
+      <div class="field"><label for="p">Password</label><input id="p" name="password" type="password" value="demo123" autocomplete="current-password"></div>
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+    <p class="hint" style="margin-top:14px">The demo account is <code>demo</code> / <code>demo123</code>. The session is a signed cookie; the API checks it on every protected route.</p>
+  </div>
+</section>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Secretsync · console</span>
+    <span><a href="index.html">Back to the overview</a></span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("[data-refresh]").forEach(function (button) {
+    button.addEventListener("click", function () { location.reload(); });
+  });
+});
+</script>
+</body>
+</html>

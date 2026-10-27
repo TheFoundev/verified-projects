@@ -1,0 +1,5 @@
+# secretsync: ciphertext and key material handling
+*.enc.yaml diff=sops text eol=lf
+*.dec.yaml -text
+*.key -text
+*.agekey -text

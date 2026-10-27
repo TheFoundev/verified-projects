@@ -1,0 +1,38 @@
+# k3s/config-agent.yaml - K3s AGENT (worker) configuration.
+#
+# Read by the agent when started with --config (K3S_CONFIG_FILE). Agents do
+# not run etcd; they connect to a server with K3S_URL and authenticate with
+# the node-token passed via the environment by bootstrap/20-install-agent.sh.
+# Never write the token into this file.
+#
+# Reference: https://docs.k3s.io/cli/agent
+
+# Do not run the control plane or packaged Helm charts on workers.
+disable:
+  - traefik
+  - servicelb
+
+# kubelet tuning for low-memory edge boards (Pi 4/5, 2-4GB).
+kubelet-arg:
+  - "eviction-hard=memory.available<150Mi,nodefs.available<10%"
+  - "system-reserved=cpu=100m,memory=100Mi"
+  - "kube-reserved=cpu=100m,memory=100Mi"
+  - "max-pods=60"
+
+# Keep images and logs from filling the SD card / small root volume.
+container-log-max-size: "10Mi"
+container-log-max-files: 3
+
+# Pull rate limiting; edge links are often slow or metered.
+image-credential-provider-config: ""
+kube-proxy-arg:
+  - "conntrack-max-per-core=131072"
+
+# Labels applied to every agent using this file. The install script also sets
+# node-class per host (pi|vm) as a flag; this is the default fallback.
+node-label:
+  - "node-class=pi"
+  - "edge-role=agent"
+
+# Advertise the node's primary address; override per host with K3S_NODE_IP.
+node-ip: "${K3S_NODE_IP:-}"

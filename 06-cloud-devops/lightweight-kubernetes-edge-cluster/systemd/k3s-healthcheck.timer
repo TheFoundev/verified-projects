@@ -1,0 +1,15 @@
+[Unit]
+Description=Run the K3s node health probe every minute
+Documentation=https://github.com/k3s-io/k3s
+Requires=k3s-healthcheck.service
+
+[Timer]
+# First run shortly after boot, then every minute.
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=false
+Unit=k3s-healthcheck.service
+
+[Install]
+WantedBy=timers.target

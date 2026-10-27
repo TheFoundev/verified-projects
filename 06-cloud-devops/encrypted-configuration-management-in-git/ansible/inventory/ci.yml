@@ -1,0 +1,15 @@
+---
+# Inventory for the CI run of the playbook.
+#
+# The example inventory (ansible/inventory/dev.yml) points at a host that
+# only exists in a real deployment. In CI the playbook runs against the
+# runner itself, with the local connection, so the lookup plugin and the
+# decrypt-in-CI path are really executed.
+all:
+  children:
+    app:
+      hosts:
+        app-ci:
+          inventory_environment: dev
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"

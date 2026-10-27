@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tekton Pipeline Engine · project console</title>
+<meta name="description" content="A Kubernetes-native pipeline engine in miniature: task and pipeline definitions with parameters, runAfter dependency resolution, validation of missing references, and execution status for every task.">
+<meta name="theme-color" content="hsl(265 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">TK</span>
+    <span><strong>Tekton Pipeline Engine</strong><small>Compile the graph, run the tasks</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">cloud · Go</span>
+      <h1>Resolve runAfter, then execute in order.</h1>
+      <p class="lede">A Kubernetes-native pipeline engine in miniature: task and pipeline definitions with parameters, runAfter dependency resolution, validation of missing references, and execution status for every task.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is a Go pipeline engine, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Typed task definitions</h3>
+          <p>Tasks and pipelines carry parameters and references, parsed from the project format.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Dependency resolution</h3>
+          <p>runAfter edges become an execution order, with cycles and missing tasks rejected.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>Validation first</h3>
+          <p>A pipeline that references an unknown task fails before anything runs.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Per-task status</h3>
+          <p>Every task reports its outcome, so a run is inspectable end to end.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◫</div>
+          <h3>Runs without a cluster</h3>
+          <p>The resolver and executor are local; no API server or pod is required.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">engine.go parses the definitions, validates references, topologically orders the tasks and executes them, recording a status per task. main.go exposes the CLI. The CSV stack names Kubernetes, CRDs and kubectl; this build implements the resolver and executor locally, and the README is explicit that there is no API server or pod execution behind it.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go</span><span class="badge">Pipelines</span><span class="badge">DAG resolution</span><span class="badge">CLI</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>go run .</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>go run .</code></td><td>run the bundled pipeline</td></tr><tr><td><code>go test ./...</code></td><td>run the Go test suite</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tekton Pipeline Engine — part of the Foundev portfolio.</span>
+    <span>A Go pipeline engine.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

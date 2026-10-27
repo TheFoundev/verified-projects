@@ -1,0 +1,10 @@
+---
+# Inventory: development environment.
+all:
+  children:
+    app:
+      hosts:
+        app-dev.internal:
+          inventory_environment: dev
+          ansible_host: app-dev.internal
+          ansible_user: deploy

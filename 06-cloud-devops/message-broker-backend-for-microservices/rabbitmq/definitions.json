@@ -1,0 +1,177 @@
+{
+  "rabbit_version": "3.13.7",
+  "rabbitmq_version": "3.13.7",
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "queues": [
+    {
+      "name": "orders.process",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5,
+        "x-dead-letter-exchange": "orders",
+        "x-dead-letter-routing-key": "order.dlq"
+      }
+    },
+    {
+      "name": "orders.retry.1",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5,
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "orders",
+        "x-dead-letter-routing-key": "order.retry"
+      }
+    },
+    {
+      "name": "orders.retry.2",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5,
+        "x-message-ttl": 20000,
+        "x-dead-letter-exchange": "orders",
+        "x-dead-letter-routing-key": "order.retry"
+      }
+    },
+    {
+      "name": "orders.retry.3",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5,
+        "x-message-ttl": 80000,
+        "x-dead-letter-exchange": "orders",
+        "x-dead-letter-routing-key": "order.retry"
+      }
+    },
+    {
+      "name": "orders.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "orders.billing",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "orders.shipping",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-delivery-limit": 5
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "orders",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.process",
+      "destination_type": "queue",
+      "routing_key": "order.created",
+      "arguments": {},
+      "properties_key": "order.created"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.process",
+      "destination_type": "queue",
+      "routing_key": "order.retry",
+      "arguments": {},
+      "properties_key": "order.retry"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.retry.1",
+      "destination_type": "queue",
+      "routing_key": "order.retry.1",
+      "arguments": {},
+      "properties_key": "order.retry.1"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.retry.2",
+      "destination_type": "queue",
+      "routing_key": "order.retry.2",
+      "arguments": {},
+      "properties_key": "order.retry.2"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.retry.3",
+      "destination_type": "queue",
+      "routing_key": "order.retry.3",
+      "arguments": {},
+      "properties_key": "order.retry.3"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.dlq",
+      "destination_type": "queue",
+      "routing_key": "order.dlq",
+      "arguments": {},
+      "properties_key": "order.dlq"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.billing",
+      "destination_type": "queue",
+      "routing_key": "order.charged",
+      "arguments": {},
+      "properties_key": "order.charged"
+    },
+    {
+      "source": "orders",
+      "vhost": "/",
+      "destination": "orders.shipping",
+      "destination_type": "queue",
+      "routing_key": "order.fulfilled",
+      "arguments": {},
+      "properties_key": "order.fulfilled"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{{- if .Values.cache.enabled }}
+{{/*
+Headless Service for the cache StatefulSet.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-cache-headless
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: cache
+  ports:
+    - name: redis
+      port: {{ .Values.cache.service.port }}
+      targetPort: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "edge-stateful.fullname" . }}-cache
+  labels:
+    {{- include "edge-stateful.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "edge-stateful.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: cache
+  ports:
+    - name: redis
+      port: {{ .Values.cache.service.port }}
+      targetPort: redis
+{{- end }}

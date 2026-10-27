@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beacon · Beacon</title>
+<meta name="description" content="Beacon keeps the samples of a metric in memory. Rate, Sum and Average read the samples of a window, and a rule with a threshold and a for-duration fires when the value of that window is above the threshold. The samples arrive as JSON on /ingest, the store answers a query on /query, and the counters are also written in the text format Prometheus reads.">
+<meta name="theme-color" content="hsl(276 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Bc</span>
+    <span><strong>Beacon</strong><small>Samples in a window, rules that fire</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">education &amp; learning</span>
+      <h1>The value of a metric, and the rule that watches it.</h1>
+      <p class="lede">Beacon keeps the samples of a metric in memory. Rate, Sum and Average read the samples of a window, and a rule with a threshold and a for-duration fires when the value of that window is above the threshold. The samples arrive as JSON on /ingest, the store answers a query on /query, and the counters are also written in the text format Prometheus reads.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Samples with labels</h3>
+          <p>A sample has a metric, a map of labels, a value and the time it was taken.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>Three windows</h3>
+          <p>Rate, Sum and Average read the samples of a metric that lie in a window.</p>
+        </article><article class="card reveal">
+          <div class="icon">⚖</div>
+          <h3>Rules with a for-duration</h3>
+          <p>A rule fires when the value of its window is above the threshold.</p>
+        </article><article class="card reveal">
+          <div class="icon">◷</div>
+          <h3>Alerts with a time</h3>
+          <p>An alert keeps the value, the threshold and the time of the first sample of the window.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Prometheus text</h3>
+          <p>The store writes the sample counter and the rate of every metric in the text format Prometheus reads.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Two handlers</h3>
+          <p>IngestHandler takes a JSON list of samples and QueryHandler answers the rate and the average of a metric.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">metrics.go holds the model and the store. Sample carries a metric, its labels, its value and its time; Store keeps the samples in a slice behind a sync.RWMutex and Add puts them there. windowLocked and window pick the samples of one metric that lie in a window and sort them by time, Rate divides the difference of the last and the first value by the time between them, Sum adds the values of the window and Average divides that sum by the number of samples. Rule carries a threshold, a for-duration and a mode; Evaluate averages the metric over the for-duration of the rule, takes the rate instead when the mode is rate, and writes an Alert with the value, the threshold and the time of the first sample of the window when the value is above the threshold. Store.Prometheus writes the sample counter and the rate of every metric in the text format Prometheus reads, and IngestHandler, QueryHandler and PrometheusHandler serve the store over HTTP. main.go fills the store with the sample series of two metrics and with one rule, and prints the rate, the average and the alerts.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">net/http</span><span class="badge">encoding/json</span><span class="badge">sync.RWMutex</span><span class="badge">Prometheus text format</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The samples, the metrics, the rules and the alerts of the store</td></tr><tr><td><code>GET</code></td><td><code>/api/metrics</code></td><td>Every metric with its samples, its rate, its sum and its average</td></tr><tr><td><code>GET</code></td><td><code>/api/samples</code></td><td>Every sample of the store with its labels and its time</td></tr><tr><td><code>GET</code></td><td><code>/api/rules</code></td><td>The alert rules with their threshold and their for-duration</td></tr><tr><td><code>GET</code></td><td><code>/api/alerts</code></td><td>The alerts of the last evaluation</td></tr><tr><td><code>GET</code></td><td><code>/api/prometheus</code></td><td>The counters in the text format Prometheus reads</td></tr><tr><td><code>POST</code></td><td><code>/api/ingest</code></td><td>Add samples to the store and answer with the number of samples</td></tr><tr><td><code>POST</code></td><td><code>/api/query</code></td><td>The rate, the sum and the average of one metric in a window</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run .
+# go run . -listen :8083
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="samples">—</div><div class="label">Samples</div></div><div class="stat"><div class="value" data-stat="metrics">—</div><div class="label">Metrics</div></div><div class="stat"><div class="value" data-stat="rules">—</div><div class="label">Rules</div></div><div class="stat"><div class="value" data-stat="alerts">—</div><div class="label">Alerts</div></div><div class="stat"><div class="value" data-stat="rate_http">—</div><div class="label">Rate http_requests_total (/s)</div></div><div class="stat"><div class="value" data-stat="avg_queue">—</div><div class="label">Average queue_depth</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Beacon — part of the Foundev portfolio.</span>
+    <span>Themed for education &amp; learning.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

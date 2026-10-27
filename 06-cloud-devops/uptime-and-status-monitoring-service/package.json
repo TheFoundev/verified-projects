@@ -1,0 +1,14 @@
+{
+  "name": "uptime-and-status-monitoring-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Develop a self-hosted status-page service that monitors HTTP, TCP, DNS and heartbeat endpoints with real-time latency charts, incident history and public status pages.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anvil · Anvil</title>
+<meta name="description" content="Anvil stores the objects of a repository the way git hashes them: the type, the size and the content of an object, separated by a null byte. A commit writes a blob for every file, a tree that lists them and the commit itself, and the branches point at the commits. The workflow file is read from its indentation, and the runner executes the steps of a job, skips the steps after a failing one and reports an action that is not implemented instead of pretending to have run it.">
+<meta name="theme-color" content="hsl(240 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">Av</span>
+    <span><strong>Anvil</strong><small>Git objects, branches and a workflow runner</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">productivity &amp; planning</span>
+      <h1>Keep the objects, move the branches, read the workflow.</h1>
+      <p class="lede">Anvil stores the objects of a repository the way git hashes them: the type, the size and the content of an object, separated by a null byte. A commit writes a blob for every file, a tree that lists them and the commit itself, and the branches point at the commits. The workflow file is read from its indentation, and the runner executes the steps of a job, skips the steps after a failing one and reports an action that is not implemented instead of pretending to have run it.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">◈</div>
+          <h3>The hashes of git</h3>
+          <p>gitObjectHash hashes the type, the size and the content, separated by a null byte.</p>
+        </article><article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>Blobs, trees and commits</h3>
+          <p>A commit stores a blob for every file, a tree that lists them and the commit object itself.</p>
+        </article><article class="card reveal">
+          <div class="icon">⇄</div>
+          <h3>Branches</h3>
+          <p>CreateBranch points a new branch at a commit and Checkout moves a branch to another one.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>Save and load</h3>
+          <p>Save writes the objects, the refs and the commits to a file, and Load reads them back.</p>
+        </article><article class="card reveal">
+          <div class="icon">◑</div>
+          <h3>A workflow parser</h3>
+          <p>ParseWorkflow reads the jobs and the steps from the indentation of the file.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛨</div>
+          <h3>The runner</h3>
+          <p>A failing step stops the job, the steps after it are skipped and an action that is not implemented is reported.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">repository.go holds the repository. gitObjectHash hashes an object the way git does, the type, the size and the content separated by a null byte, so the blobs, the trees and the commits have the same hashes as the objects of git. Repository.CommitAs stores a blob for every file, a tree with the hashes and the names sorted by name, and the commit object with its branch, its parent, its tree, its message, its author and its date, and then moves the branch to the new commit. Log returns the commits of a branch, newest first, Branches returns the branches and their commits, CreateBranch points a new branch at a commit, Checkout moves a branch to another commit and Diff returns the files that changed. Save and Load write the objects, the refs and the commits to a file. ParseWorkflow reads a small subset of YAML from the indentation: a job as a list entry or as a key, with run, uses, needs and env on the steps. Runner.Run walks the jobs and the steps, runs the command of a step in a shell, skips the steps after a failing one and skips the jobs whose job did not succeed. main.go commits two files and reads the sample workflow.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Go 1.22</span><span class="badge">Standard library only</span><span class="badge">crypto/sha1</span><span class="badge">os/exec</span><span class="badge">encoding/json</span><span class="badge">sync.RWMutex</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The counters of the repository: commits, objects, branches, jobs and steps</td></tr><tr><td><code>GET</code></td><td><code>/api/commits</code></td><td>The commits of the branch, newest first</td></tr><tr><td><code>GET</code></td><td><code>/api/branches</code></td><td>The branches and the commit they point at</td></tr><tr><td><code>GET</code></td><td><code>/api/objects</code></td><td>The blobs, the trees and the commits of the repository</td></tr><tr><td><code>GET</code></td><td><code>/api/jobs</code></td><td>The jobs of the workflow with the steps they hold</td></tr><tr><td><code>GET</code></td><td><code>/api/steps</code></td><td>The steps of every job with their command</td></tr><tr><td><code>GET</code></td><td><code>/api/results</code></td><td>The results of the dry run of the workflow</td></tr><tr><td><code>POST</code></td><td><code>/api/commit</code></td><td>Commit files to a branch and answer with the hash of the commit</td></tr><tr><td><code>POST</code></td><td><code>/api/workflow</code></td><td>Read a workflow and answer with its jobs and its steps</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># go build ./...
+# go run . -message initial
+# go run . -branch main -state repository.json
+# go run . -run -workdir /tmp/anvil
+# go test ./...</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div><div class="stat"><div class="value" data-stat="commits">—</div><div class="label">Commits</div></div><div class="stat"><div class="value" data-stat="objects">—</div><div class="label">Objects</div></div><div class="stat"><div class="value" data-stat="branches">—</div><div class="label">Branches</div></div><div class="stat"><div class="value" data-stat="jobs">—</div><div class="label">Jobs</div></div><div class="stat"><div class="value" data-stat="steps">—</div><div class="label">Steps</div></div><div class="stat"><div class="value" data-stat="results">—</div><div class="label">Results of the dry run</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Anvil — part of the Foundev portfolio.</span>
+    <span>Themed for productivity &amp; planning.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>

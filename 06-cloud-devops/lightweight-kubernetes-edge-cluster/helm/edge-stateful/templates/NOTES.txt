@@ -1,0 +1,20 @@
+edge-stateful installed as release {{ .Release.Name }} in namespace {{ .Release.Namespace }}.
+
+Storage: all volumes come from the local-path StorageClass, so data lives on
+the node that hosted the pod. If that node is lost the data is lost too -- see
+docs/RUNBOOK.md for the backup and node-replacement procedure.
+
+Check the rollout:
+
+  kubectl get statefulset -l app.kubernetes.io/instance={{ .Release.Name }}
+  kubectl get pvc -l app.kubernetes.io/instance={{ .Release.Name }}
+  kubectl get pdb   -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Connect to Postgres from inside the cluster:
+
+  kubectl run pg-client --rm -it --image=postgres:16.4-alpine --restart=Never -- \
+    psql -h {{ include "edge-stateful.fullname" . }}-postgres -U {{ .Values.postgres.username }} -d {{ .Values.postgres.database }}
+
+Run the chart's connectivity test:
+
+  helm test {{ .Release.Name }}

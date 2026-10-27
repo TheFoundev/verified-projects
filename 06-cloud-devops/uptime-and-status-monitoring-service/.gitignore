@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+vendor/
+
+# build output
+dist/
+build/
+target/
+out/
+*.o
+*.class
+*.jar
+
+# runtime data
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/*.json
+!data/seed*.json
+.env
+.env.*
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
+coverage/
+.next/

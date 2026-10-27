@@ -1,0 +1,19 @@
+[Unit]
+Description=Snapshot the K3s embedded etcd datastore
+Documentation=https://docs.k3s.io/datastore/backup-restore
+# Only meaningful on server nodes; the ExecStart guard exits cleanly elsewhere.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Where snapshots land. Keep this off the etcd data dir if possible, and copy
+# it off-box (rsync/object storage) for real durability.
+Environment=SNAPSHOT_DIR=/var/lib/rancher/k3s/server/db/snapshots
+Environment=SNAPSHOT_RETAIN=5
+ExecStart=/usr/local/bin/k3s-backup.sh
+TimeoutStartSec=300s
+Nice=15
+
+[Install]
+WantedBy=multi-user.target
