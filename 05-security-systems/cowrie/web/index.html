@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cowrie · Cowrie</title>
+<meta name="description" content="A small honeypot: it answers a line-based shell, the files of a fake system can be read and the directories can be listed, and every login attempt and every command is written into the log of the session.">
+<meta name="theme-color" content="hsl(350 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">HP</span>
+    <span><strong>Cowrie</strong><small>A honeypot that records what attackers try</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html" class="">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">security &amp; defence</span>
+      <h1>The log of everybody who tried to get in.</h1>
+      <p class="lede">A small honeypot: it answers a line-based shell, the files of a fake system can be read and the directories can be listed, and every login attempt and every command is written into the log of the session.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+        
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the real API of this project — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3"><article class="card reveal">
+          <div class="icon">⌨</div>
+          <h3>A shell that answers</h3>
+          <p>The commands of a small fake system are answered, so an attacker can walk in and believe it.</p>
+        </article><article class="card reveal">
+          <div class="icon">👤</div>
+          <h3>Every login is kept</h3>
+          <p>The user and the password of every attempt are written into the log of the session.</p>
+        </article><article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>The commands are kept too</h3>
+          <p>Every command of every session lands in the log, with the address it came from.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛓</div>
+          <h3>No sessions mix</h3>
+          <p>The events are collected under a lock, so two sessions never write into the same list.</p>
+        </article><article class="card reveal">
+          <div class="icon">⏱</div>
+          <h3>Silent sessions end</h3>
+          <p>A session that stops talking is closed instead of being kept open for ever.</p>
+        </article><article class="card reveal">
+          <div class="icon">⛁</div>
+          <h3>A log you can read</h3>
+          <p>The run writes plain JSON lines, one event per line, with no lock-in of any kind.</p>
+        </article></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">The honeypot is a threaded socket server that writes a banner, asks for a user and a password and then answers the commands of a small fake system, so an attacker walks into a sandbox that is not a real machine. The events of every session are collected by the server under a lock, so two sessions never write into the same list. A session that says nothing is closed, and the log of the run is written as JSON lines.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">Python</span><span class="badge">socketserver</span><span class="badge">Threads</span><span class="badge">JSON lines</span><span class="badge">Standard library</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>The state of the last run: the sessions, the commands and the users</td></tr><tr><td><code>GET</code></td><td><code>/api/events</code></td><td>Every event of the log: the logins, the commands and the timeouts</td></tr><tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Start the honeypot again, let the clients in and answer with the new summary</td></tr><tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr><tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+<pre><code># pip install -r requirements.txt
+# python main.py run          # start the honeypot and let the clients in
+# python main.py demo         # the captured events, printed
+# pytest -q                  # the test suite</code></pre>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The state of the running instance</h2>
+          <div class="stats" id="stats">
+            <div class="stat"><div class="value" data-stat="__status">—</div><div class="label">Status</div></div>
+            <div class="stat"><div class="value" data-stat="sessions">—</div><div class="label">Sessions</div></div><div class="stat"><div class="value" data-stat="commands">—</div><div class="label">Commands</div></div><div class="stat"><div class="value" data-stat="unique_users">—</div><div class="label">Users</div></div><div class="stat"><div class="value" data-stat="port">—</div><div class="label">Port</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Cowrie — part of the Foundev portfolio.</span>
+    <span>Themed for security &amp; defence.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
