@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operating System Kernel · project console</title>
+<meta name="description" content="A tiny x86 kernel with a multiboot header, a 32-bit entry stub, freestanding string and memory helpers, and VGA text-buffer utilities, tested on the host and optionally bootable.">
+<meta name="theme-color" content="hsl(190 72% 46%)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=ui-sans-serif,+system-ui,+'Segoe+UI',+sans-serif:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="mark">OS</span>
+    <span><strong>Operating System Kernel</strong><small>Multiboot entry, VGA text, no libc</small></span>
+  </a>
+  <nav class="nav"><a href="index.html" class="active">Overview</a><a href="console.html">Console</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">systems · C</span>
+      <h1>Boot, print, survive the host build.</h1>
+      <p class="lede">A tiny x86 kernel with a multiboot header, a 32-bit entry stub, freestanding string and memory helpers, and VGA text-buffer utilities, tested on the host and optionally bootable.</p>
+      <div class="actions">
+        <a class="btn primary" href="console.html">Open the console</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="banner" style="display:block">
+        <strong>This is a freestanding kernel, not a hosted product.</strong>
+        It is part of the Foundev portfolio: a self-contained repository with its own tests and README.
+        The page you are reading is a project console — the numbers below are computed from the repository, and the demo runs the project's own command.
+      </div>
+      <div class="head reveal">
+        <div>
+          <span class="eyebrow">What it does</span>
+          <h2 style="margin-top:10px">The capabilities</h2>
+        </div>
+        <p class="lede" style="max-width:42ch">Every panel below is served by the console's real API — nothing here is a mock-up.</p>
+      </div>
+      <div class="grid cols-3">
+        <article class="card reveal">
+          <div class="icon">▣</div>
+          <h3>A multiboot header</h3>
+          <p>GRUB can load the image through a correct multiboot header and 32-bit entry stub.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">⌗</div>
+          <h3>No libc</h3>
+          <p>String and memory helpers are implemented in the tree because the target has no runtime.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">▤</div>
+          <h3>VGA text utilities</h3>
+          <p>Colour, cursor and cell layout are written directly to the text buffer.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">✓</div>
+          <h3>Host tests</h3>
+          <p>The same pure logic compiles for the host, so the checks run without a 32-bit toolchain.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon">◫</div>
+          <h3>An optional image</h3>
+          <p>make image builds a bootable artefact when a 32-bit toolchain and GRUB are present.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2 style="margin:10px 0 12px">How it works</h2>
+          <p class="lede">src/ contains the entry stub, the freestanding helpers and the VGA routines. The host test target compiles the portable parts against a shim so the logic can be exercised on any machine. Producing a boot image is a separate, optional target because it needs a cross toolchain; this environment does not have one, which is why the test target is the honest demo here.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:18px"><span class="badge">C</span><span class="badge">x86</span><span class="badge">Multiboot</span><span class="badge">Make</span></div>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">The console API</span>
+          <h2 style="margin:10px 0 12px">Endpoints</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Method</th><th>Path</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td><code>GET</code></td><td><code>/api/summary</code></td><td>Counts files, lines and tests in this repository, and groups the lines by language</td></tr>
+                <tr><td><code>POST</code></td><td><code>/api/run</code></td><td>Runs the project's own demo command and returns its real output</td></tr>
+                <tr><td><code>GET</code></td><td><code>/console.html</code></td><td>The console of this site</td></tr>
+                <tr><td><code>GET</code></td><td><code>/assets/theme.css</code></td><td>The design system of this site</td></tr>
+                <tr><td><code>CLI</code></td><td><code>make test</code></td><td>The project's own native entry point</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="grid cols-2">
+        <div class="reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2 style="margin:10px 0 12px">Run it locally</h2>
+          <div class="panel">
+            <table>
+              <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+              <tbody><tr><td><code>make</code></td><td>build the host test binary</td></tr><tr><td><code>make test</code></td><td>run the host tests</td></tr><tr><td><code>make image</code></td><td>build a boot image (needs a 32-bit toolchain)</td></tr></tbody>
+            </table>
+          </div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">The console itself needs nothing but Python: <code>py -3 web/server.py</code>.</p>
+        </div>
+        <div class="reveal">
+          <span class="eyebrow">Live</span>
+          <h2 style="margin:10px 0 12px">The repository, counted</h2>
+          <div class="stats" id="stats"><div class="stat"><div class="value" data-stat="Files">—</div><div class="label">Files</div></div><div class="stat"><div class="value" data-stat="Lines">—</div><div class="label">Lines</div></div><div class="stat"><div class="value" data-stat="Tests">—</div><div class="label">Tests</div></div><div class="stat"><div class="value" data-stat="Language">—</div><div class="label">Language</div></div></div>
+          <p class="lede" style="margin-top:12px;font-size:.86rem">Start <code>web/server.py</code> to replace these dashes with the real counts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Operating System Kernel — part of the Foundev portfolio.</span>
+    <span>A freestanding kernel.</span>
+  </div>
+</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
